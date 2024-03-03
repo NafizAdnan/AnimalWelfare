@@ -16,7 +16,7 @@ from django.core.mail import EmailMessage, send_mail
 # Create your views here.
 
 def home(request):
-    return render(request, 'index.html')
+    return render(request, 'baseapp/index.html')
 
 def signup(request):
 
@@ -69,11 +69,10 @@ def signup(request):
         to_list = [newUser.email]
         send_mail(subject, message, from_email, to_list, fail_silently=True)
 
-
         # Email Address Confirmation Email
         current_site = get_current_site(request)
         email_subject = "Confirm your Email @ Animal_Welfare - Django Login!!"
-        message2 = render_to_string('email_confirmation.html', {
+        message2 = render_to_string('baseapp/email_confirmation.html', {
 
             'name': newUser.first_name,
             'domain': current_site.domain,
@@ -91,7 +90,7 @@ def signup(request):
 
         return redirect('signin')
 
-    return render(request, 'signup.html')
+    return render(request, 'baseapp/signup.html')
 
 @login_required(login_url='signin')
 def update_profile(request):
@@ -132,7 +131,7 @@ def update_profile(request):
         messages.success(request, "Profile Updated Successfully!!")
         return redirect('update_profile')
 
-    return render(request, 'update-profile.html')
+    return render(request, 'baseapp/update-profile.html')
 
 def signin(request):
     if request.method == "POST":
@@ -148,7 +147,7 @@ def signin(request):
             messages.error(request, "Invalid Credentials!! Please try again.")
             return redirect('signin')
 
-    return render(request, "signin.html")
+    return render(request, "baseapp/signin.html")
 
 def signout(request):
     logout(request)
@@ -183,7 +182,7 @@ def account_activate(request):
 
     current_site = get_current_site(request)
     email_subject = "Confirm your Email @ Animal_Welfare - Django Login!!"
-    message2 = render_to_string('email_confirmation.html', {
+    message2 = render_to_string('baseapp/email_confirmation.html', {
 
         'name': newUser.first_name,
         'domain': current_site.domain,
