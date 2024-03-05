@@ -1,0 +1,17 @@
+{% extends 'new.html' %}
+
+{% block content %}
+
+<h1>Delete Adoption Post</h1>
+</br>
+<h3>Delete: {{ post.title }}</h3>
+
+<form method="POST" action="{% url 'delete_post' post.pk %}" enctype="multipart/form-data" >
+    {% csrf_token %}
+    </br>
+    <strong>Are you sure?!</strong>
+    </br>
+    <button type="submit" class="btn btn-danger">Delete</button>
+</form>
+
+{% endblock %}

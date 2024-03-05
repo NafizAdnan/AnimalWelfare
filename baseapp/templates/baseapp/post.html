@@ -1,0 +1,14 @@
+{% extends 'new.html' %}
+
+{% block content %}
+
+<h1>Adoption Posts</h1>
+<ul>
+{% for post in object_list%}
+ <li><a href="{% url 'animal-detail' post.pk %}"> {{ post.title }} </a>- {{ post.author.first_name }} {{ post.author.last_name }} 
+    - <a href="{% url 'update_post' post.pk %}">Edit Post</a><br/></li> - <a href="{% url 'delete_post' post.pk %}">Delete Post</a><br/></li>
+{% endfor %}
+</ul>
+<a href="{%url 'home'%}" class="btn btn-secondary">Back</a>
+
+{% endblock %}

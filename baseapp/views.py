@@ -11,7 +11,9 @@ from django.contrib.auth.decorators import login_required
 from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
-
+from django.views.generic import ListView, DetailView,CreateView,UpdateView,DeleteView
+from .models import Post
+from django.urls import reverse_lazy
 
 # Create your views here.
 
@@ -177,7 +179,7 @@ def activate(request, uidb64, token):
 
 
 
-def account_activate(request):
+def account_activate(request,newUser):
 
 
     current_site = get_current_site(request)
@@ -200,3 +202,37 @@ def account_activate(request):
 
     messages.success(request, "Your Account has been activated!!")
     return redirect('home')
+
+#def post(request):
+ #   return render(request,'baseapp/post.html')
+class PostView(ListView):
+    model = Post
+    template_name = 'baseapp/post.html'
+
+class AnimalDetailView(DetailView):
+    model = Post
+    template_name = 'baseapp/animaldetail.html'
+
+class AddPostView(CreateView):
+    model = Post
+    template_name = 'add_post.html'
+    fields = '__all__'
+
+class UpdatePostView(UpdateView):
+    model = Post
+    template_name = 'update_post.html'
+    fields = ['title','contact_info','body','picture','phone_number']
+
+class DeletePostView(DeleteView):
+    model = Post
+    template_name = 'delete_post.html'
+    success_url = reverse_lazy('post')
+    
+    
+    
+    
+
+    
+
+
+    
