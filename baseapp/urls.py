@@ -1,6 +1,10 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import PostView,AnimalDetailView,AddPostView,UpdatePostView,DeletePostView
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -21,4 +25,12 @@ urlpatterns = [
     path('password_reset_complete/',
          auth_views.PasswordResetCompleteView.as_view(),
          name='password_reset_complete'),
+     #path('post', views.post, name='post'),
+     path('post/',PostView.as_view(),name='post'),
+     path('animal/<int:pk>',AnimalDetailView.as_view(),name='animal-detail'),
+     path('add_post/',AddPostView.as_view(),name='add_post'),
+     path('update_post/<int:pk>',UpdatePostView.as_view(),name='update_post'),
+     path('delete_post/<int:pk>',DeletePostView.as_view(),name='delete_post'),
+
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
