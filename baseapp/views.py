@@ -12,7 +12,7 @@ from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
 from django.views.generic import ListView, DetailView,CreateView,UpdateView,DeleteView
-from .models import Post
+from .models import *
 from django.urls import reverse_lazy
 
 # Create your views here.
@@ -24,13 +24,19 @@ def signup(request):
 
     if request.method == "POST":
         print(request.POST)
-        username = request.POST['username']
-        fname = request.POST['fname']
-        lname = request.POST['lname']
-        email = request.POST['email']
-        pass1 = request.POST['pass1']
-        pass2 = request.POST['pass2']
+        # username = request.POST['username']
+        # fname = request.POST['fname']
+        # lname = request.POST['lname']
+        # email = request.POST['email']
+        # pass1 = request.POST['pass1']
+        # pass2 = request.POST['pass2']
         # contact = request.POST['contact']
+        username = request.POST.get('username')
+        fname = request.POST.get('fname')
+        lname = request.POST.get('lname')
+        email = request.POST.get('email')
+        pass1 = request.POST.get('pass1')
+        pass2 = request.POST.get('pass2')
 
         if User.objects.filter(username=username):
             messages.error(request, "Username already exist! Please try some other username.")
@@ -52,9 +58,7 @@ def signup(request):
             messages.error(request, "Username must be Alpha-Numeric!!")
             return redirect('signup')
 
-        newUser = User.objects.create_user(username, email, pass1)
-        newUser.first_name = fname
-        newUser.last_name = lname
+        newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email, password=pass1)
         # newUser.contact = contact
         # Temporarily until Custom Auth Backend is Ready
         # newUser.is_active = True
@@ -227,12 +231,80 @@ class DeletePostView(DeleteView):
     model = Post
     template_name = 'delete_post.html'
     success_url = reverse_lazy('post')
-    
-    
-    
-    
-
-    
 
 
-    
+def addAnimal(request):
+    if request.method == "POST":
+        print(request.POST)
+        title = request.POST['title']
+        age = request.POST['age']
+        breed = request.POST['breed']
+        description = request.POST['description']
+        location = request.POST['location']
+        contact = request.POST['contact']
+        picture = request.FILES['picture']
+        video = request.FILES['video']
+        vaccinated = request.POST['vaccinated']
+        available_for = request.POST['available_for']
+
+        animal = Animal(title=title, age=age, breed=breed, description=description, location=location, contact=contact, picture=picture, video=video, vaccinated=vaccinated, available_for=available_for, uploaded_by=request.user)
+        animal.save()
+        messages.success(request, "Animal Added Successfully!!")
+        return redirect('animal-list')
+
+    return render(request, 'baseapp/add_animal.html')
+
+def updateAnimal(request, pk):
+    animal = Animal.objects.get(id=pk)
+    if request.method == "POST":
+        print(request.POST)
+        title = request.POST['title']
+        age = request.POST['age']
+        breed = request.POST['breed']
+        description = request.POST['description']
+        location = request.POST['location']
+        contact = request.POST['contact']
+        picture = request.FILES['picture']
+        video = request.FILES['video']
+        vaccinated = request.POST['vaccinated']
+        available_for = request.POST['available_for']
+
+        animal.title = title
+        animal.age = age
+        animal.breed = breed
+        animal.description = description
+        animal.location = location
+        animal.contact = contact
+        animal.picture = picture
+        animal.video = video
+        animal.vaccinated = vaccinated
+        animal.available_for = available_for
+        animal.save()
+        messages.success(request, "Animal Updated Successfully!!")
+        return redirect('animal-list')
+
+    return render(request, 'baseapp/update_animal.html', {'animal':animal})
+
+def deleteAnimal(request, pk):
+    animal = Animal.objects.get(id=pk)
+    animal.delete()
+    messages.success(request, "Animal Deleted Successfully!!")
+    return redirect('animal-list')
+
+def animalList(request):
+    animals = Animal.objects.all()
+    return render(request, 'baseapp/animal_list.html', {'animals':animals})
+
+def animalDetail(request, pk):
+    animal = Animal.objects.get(id=pk)
+    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
+
+def userDetail(request, username):
+    user = User.objects.get(username=username)
+    return render(request, 'baseapp/user_detail.html', {'user':user})
+
+def uploadHistory(request):
+    animals = Animal.objects.filter(uploaded_by=request.user)
+    return render(request, 'baseapp/upload_history.html', {'animals':animals})
+
+
