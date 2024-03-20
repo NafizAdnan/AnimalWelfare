@@ -39,6 +39,7 @@ urlpatterns = [
      # path('search', views.search, name='search'),
      path('user/<str:username>/upload-history', views.uploadHistory, name='upload_history'),
      path('admin-dashboard', views.adminDashboard, name='admin_dashboard'),
+     path('user-dashboard', views.userDashboard, name='user_dashboard'),
      path('manage_animals', views.manageAnimals, name='manage_animals'),
      path('approve_upload/<int:id>', views.approveAnimal, name='approve_upload'),
      path('approved_uploads', views.approved_uploads, name='approved_uploads'),
@@ -48,9 +49,9 @@ urlpatterns = [
      path('delete_accessory/<int:id>', views.deleteAccessory, name='delete_accessory'),
      path('product/<int:id>', views.viewProduct, name='view_product'),
      # path('animal/<int:id>', views.animalDetail, name='animal_detail'),
-     # path('animal/for_adoption', views.animalsForAdoption, name='animals_for_adoption'),
-     # path('animal/for_daycare', views.animalsForDaycare, name='animals_for_daycare'),
-     # path('product/for_sale', views.productsForSale, name='products_for_sale'),
+     path('animal/for_adoption', views.animalsForAdoption, name='animals_for_adoption'),
+     path('animal/for_daycare', views.animalsForDaycare, name='animals_for_daycare'),
+     path('product/for_sale', views.productsForSale, name='products_for_sale'),
 
      ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

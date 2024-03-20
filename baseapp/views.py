@@ -356,6 +356,7 @@ def manageAnimals(request):
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def approved_uploads(request):
     animals = Animal.objects.filter(approved=True)
+    print(animals)
     return render(request, 'baseapp/approved_uploads.html', {'animals':animals})
 
 @login_required(login_url='signin')
@@ -436,7 +437,19 @@ def viewProduct(request, id):
 
 @login_required(login_url='signin')
 def userDashboard(request):
-    animals = Animal.objects.filter(uploaded_by=request.user)
-    accessories = Accessories.objects.filter(uploaded_by=request.user)
-    return render(request, 'baseapp/user_dashboard.html', {'animals':animals, 'accessories':accessories})
+    return render(request, 'baseapp/user_dashboard.html')
 
+@login_required(login_url='signin')
+def animalsForAdoption(request):
+    animals = Animal.objects.filter(available_for='Adoption', approved=True)
+    return render(request, 'baseapp/animals_for_adoption.html', {'animals':animals})
+
+@login_required(login_url='signin')
+def animalsForDaycare(request):
+    animals = Animal.objects.filter(available_for='Daycare', approved=True)
+    return render(request, 'baseapp/animal_for_daycare.html', {'animals':animals})
+
+@login_required(login_url='signin')
+def productsForSale(request):
+    products = Accessories.objects.all
+    return render(request, 'baseapp/products_for_sale.html', {'products':products})

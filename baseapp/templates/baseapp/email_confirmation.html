@@ -4,7 +4,7 @@
  Hello {{ name }},
 
 Please click the link below to confirm your email address and activate your account:
-http://{{ domain }}{% url 'activate' uidb64=uid token=token %} 
+http://{{ domain }}{% url 'baseapp:activate' uidb64=uid token=token %} 
 
 Thank you!
  {% endautoescape %}

@@ -40,7 +40,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for animal in pending %}
+                {% for animal in animals %}
                 <tr class="bg-white border-b hover:bg-gray-100">
                     <td class="px-6 py-4 text-right space-x-2">
                         <a href="{% url 'baseapp:update_animal' animal.id %}" class="btn btn-primary">Edit</a>

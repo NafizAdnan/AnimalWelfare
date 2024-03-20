@@ -1,0 +1,42 @@
+{% extends 'main.html' %}
+
+{% block title %}On Sale{% endblock title %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="text-center p-10">
+    <h1 class="font-bold text-4xl mb-4">Petcare Products:</h1>
+    <p class="text-xl"></p>
+</div>
+
+<!-- Grid Section -->
+<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mt-10 mb-5">
+
+    {% for product in products %}
+    <!-- Product Card -->
+    <div class="w-72 bg-white shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
+        <a href="">
+            {% if product.picture %}
+            <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% else %}
+            <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% endif %}
+            <div class="px-4 py-3">
+                <h3 class="text-lg font-bold text-black truncate capitalize">{{ product.title }}</h3>
+                <p class="text-gray-600 text-sm my-1">{{ product.description|truncatewords:15 }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-semibold text-black">${{ product.price }}</span>
+                    <span class="text-gray-500 text-xs">{{ product.stock }} in stock</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <!-- End Product Card -->
+    {% empty %}
+    <!-- <div>No accessories found.</div> -->
+    {% endfor %}
+
+</section>
+
+{% endblock content %}
