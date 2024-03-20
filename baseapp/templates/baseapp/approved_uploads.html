@@ -1,0 +1,116 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="container mx-auto px-4 sm:px-8 py-8 bg-gray-100">
+    <!-- Tabs/Navs -->
+    <div class="mb-8">
+        <ul class="flex border-b">
+            <li class="-mb-px mr-1">
+                <a href="{% url 'baseapp:approved_uploads' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">Approved</a>
+            </li>
+            <li class="mr-1">
+                <a href="{% url 'baseapp:manage_animals' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Pending</a>
+            </li>
+            <li class="mr-1">
+                <a href="" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Completed</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Table Title -->
+    <h2 class="text-lg font-semibold mb-4 text-black">Animal Uploads</h2>
+
+    <!-- Animals Table -->
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3">Action</th>
+                    <th scope="col" class="px-6 py-3">Title</th>
+                    <th scope="col" class="px-6 py-3">Age</th>
+                    <th scope="col" class="px-6 py-3">Breed</th>
+                    <th scope="col" class="px-6 py-3">Location</th>
+                    <th scope="col" class="px-6 py-3">Vaccinated</th>
+                    <th scope="col" class="px-6 py-3">Available For</th>
+                    <th scope="col" class="px-6 py-3">Status</th>
+                    <th scope="col" class="px-6 py-3">Date Uploaded</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for animal in pending %}
+                <tr class="bg-white border-b hover:bg-gray-100">
+                    <td class="px-6 py-4 text-right space-x-2">
+                        <a href="{% url 'baseapp:update_animal' animal.id %}" class="btn btn-primary">Edit</a>
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" data-id="{{ animal.id }}" data-name="{{ animal.title }}">Delete</button>
+                    </td>
+                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ animal.title }}</td>
+                    <td class="px-6 py-4">{{ animal.age }} months</td>
+                    <td class="px-6 py-4">{{ animal.breed }}</td>
+                    <td class="px-6 py-4">{{ animal.location }}</td>
+                    <td class="px-6 py-4">{{ animal.vaccinated|yesno:"Yes,No" }}</td>
+                    <td class="px-6 py-4">{{ animal.available_for }}</td>
+                    <td class="px-6 py-4">
+                        {% if animal.approved %}
+                            <!-- Approved SVG icon -->
+                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        {% else %}
+                            <!-- Not approved SVG icon -->
+                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">{{ animal.date_uploaded|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="px-6 py-4 text-center">No animals found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete "<span id="deleteAnimalName"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteAnimalForm" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="animal_id" id="modalAnimalId" value="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var animalId = button.data('id');
+        var animalName = button.data('name');
+        var modal = $(this);
+        modal.find('.modal-body #delete
+    // Set form's action. Replace '999999' with your Django delete view's URL name and ensure the correct ID placeholder
+    var deleteFormAction = "{% url 'baseapp:delete_animal' 999999 %}".replace('999999', animalId);
+    modal.find("#deleteAnimalForm").attr("action", deleteFormAction);
+});
+</script>
+{% endblock content %}

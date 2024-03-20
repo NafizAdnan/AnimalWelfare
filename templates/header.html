@@ -7,12 +7,12 @@
             <div class="container">
                 {% if request.user.is_authenticated %}
                 <div class="d-flex justify-content-end align-items-center"><a class="ms-2 ms-md-3 submenu"
-                        href="update-profile"><span class="uil uil-bill"></span><span class="ms-1 fs-10 fs-sm-9">My
+                        href="{% url 'baseapp:update_profile' %}"><span class="uil uil-bill"></span><span class="ms-1 fs-10 fs-sm-9">My
                             Profile</span></a><a class="ms-2 ms-md-3 submenu" href="#!"><span
                             class="uil uil-file-heart"></span><span class="ms-1 fs-10 fs-sm-9">wishlist</span></a><a
                         class="ms-2 ms-md-3 submenu" href="#!"><span class="uil uil-shopping-cart"></span><span
                             class="ms-1 fs-10 fs-sm-9">cart</span></a><a class="ms-2 ms-md-3 submenu"
-                        href="signout"><span class="uil uil-user-circle"></span><span
+                        href="{% url 'baseapp:signout' %}"><span class="uil uil-user-circle"></span><span
                             class="ms-1 fs-10 fs-sm-9">Logout</span></a>
                     {% else %}
                     <div class="d-flex justify-content-end align-items-center"><a class="ms-2 ms-md-3 submenu"
@@ -22,7 +22,7 @@
                                 class="ms-1 fs-10 fs-sm-9">wishlist</span></a><a class="ms-2 ms-md-3 submenu"
                             href="#!"><span class="uil uil-shopping-cart"></span><span
                                 class="ms-1 fs-10 fs-sm-9">cart</span></a><a class="ms-2 ms-md-3 submenu"
-                            href="signin"><span class="uil uil-user-circle"></span><span
+                            href="{% url 'baseapp:signin' %}"><span class="uil uil-user-circle"></span><span
                                 class="ms-1 fs-10 fs-sm-9">Login/Sign Up</span></a>
                         {% endif %}
                     </div>
@@ -47,7 +47,7 @@
                                 </form>
                                 <ul class="navbar-nav mt-2 mt-lg-1 ms-lg-4 ms-xl-8 ms-2xl-9 gap-lg-x1"
                                     data-navbar-nav="data-navbar-nav">
-                                    <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="#home"
+                                    <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="{% url 'baseapp:home' %}"
                                             title="home">home</a></li>
                                     <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="#about"
                                             title="about">about</a>
