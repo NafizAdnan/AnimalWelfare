@@ -1,18 +1,21 @@
 {% extends "main.html" %}
-{% block content %}
+{% load static %}
+{% block extra_css %}
 <style>
-.header-text-color {
-    color: #333; /* Or any color you prefer */
-}
+    .header-text-color {
+        color: #333; /* Or any color you prefer */
+    }
 </style>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-<link href="update_profile.css" rel="stylesheet">
+<link href="{% static 'update_profile.css' %}" rel="stylesheet">
+{% endblock %}
+{% block title %}Update Profile{% endblock %}
+{% block content %}
 <div class="container-xl px-4 mt-4">
     <nav class="nav nav-borders">
         <a class="nav-link active ms-0" href="#">Profile</a>
-        <a class="nav-link" href="#">Change Password</a>
-        <a class="nav-link" href="#">Security</a>
-        <a class="nav-link" href="#">Notifications</a>
+        <a class="nav-link" href="{% url 'baseapp:change_password' %}">Change Password</a>
+        <!-- <a class="nav-link" href="#">Security</a>
+        <a class="nav-link" href="#">Notifications</a> -->
     </nav>
     <hr class="mt-0 mb-4">
     <div class="row">
@@ -20,10 +23,20 @@
             <div class="card mb-4 mb-xl-0">
                 <div class="card-header header-text-color">Profile Picture</div>
                 <div class="card-body text-center">
-                    <img class="img-account-profile rounded-circle mb-2" src="" alt="">
-                    <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
-                    <!-- Changed to input type=file for profile picture upload -->
+                    <form action="{% url 'baseapp:update_profile' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="{{user.username}}" class="mt-2 max-h-32">
+                    <div class="bg-gray-100 border-t">
+                        <input type="checkbox" name="remove_picture" id="remove_picture">
+                        <label for="remove_picture" class="small mb-1 header-text-color text-black font-semibold">Remove Current Profile Picture</label>
+                    </div>
+                    {% else %}
+                    <img class="img-account-profile rounded-circle mb-2" src="" alt="{{user.username}}">
+                    {% endif %}
+                    <div class="small font-italic text-muted mb-4">JPG or PNG not larger than 5 MB</div>
                     <input type="file" class="form-control" name="profile_picture" id="profile_picture">
+                    <!-- <button class="btn btn-primary mt-4" type="submit">Upload</button> -->
                 </div>
             </div>
         </div>
@@ -31,8 +44,8 @@
             <div class="card mb-4">
                 <div class="card-header header-text-color">Account Details</div>
                 <div class="card-body">
-                    <form action="{% url 'baseapp:update_profile' %}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
+                    <!-- <form action="{% url 'baseapp:update_profile' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %} -->
                         <div class="mb-3">
                             <label class="small mb-1 header-text-color" for="inputBio">Bio</label>
                             <textarea class="form-control" id="inputBio" name="bio">{{ request.user.bio }}</textarea>
@@ -76,6 +89,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

@@ -10,7 +10,7 @@ urlpatterns = [
     path('signup', views.signup, name='signup'),
     path('signin', views.signin, name='signin'),
     path('signout', views.signout, name='signout'),
-    path('update-profile', views.update_profile, name='update_profile'),
+    path('update-profile/', views.update_profile, name='update_profile'),
     path('activate/<uidb64>/<token>', views.activate, name='activate'),
     path('password_reset/',
          auth_views.PasswordResetView.as_view(),
@@ -24,12 +24,6 @@ urlpatterns = [
     path('password_reset_complete/',
          auth_views.PasswordResetCompleteView.as_view(),
          name='password_reset_complete'),
-     #path('post', views.post, name='post'),
-     # path('post/',PostView.as_view(),name='post'),
-     # path('animal/<int:pk>',AnimalDetailView.as_view(),name='animal-detail'),
-     # path('add_post/',AddPostView.as_view(),name='add_post'),
-     # path('update_post/<int:pk>',UpdatePostView.as_view(),name='update_post'),
-     # path('delete_post/<int:pk>',DeletePostView.as_view(),name='delete_post'),
      path('add-animal', views.addAnimal, name='add_animal'),
      path('update-animal/<int:id>', views.updateAnimal, name='update_animal'),
      path('delete-animal/<int:id>', views.deleteAnimal, name='delete_animal'),
@@ -59,8 +53,7 @@ urlpatterns = [
      path('manage_adopt/', views.manage_adopt, name='manage_adopt'),
      path('approve_adopt/<int:pk>/', views.approve_adopt, name='approve_adopt'),
      #path('user/<int:pk>/upload-history', views.adoptionHistory, name='adoption_history'),
-
-
+     path('update-password', views.change_password, name='change_password'),
 
      ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
