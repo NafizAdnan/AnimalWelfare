@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'baseapp'
+    'baseapp',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -82,6 +83,23 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'AnimalWelfare.wsgi.application'
+ASGI_APPLICATION = 'AnimalWelfare.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default' : {
+        'BACKEND' : 'channels.layers.InMemoryChannelLayers'
+
+    
+    },
+    'default' : {
+        'BACKEND' : 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts":[('127.0.0.1',6379)],
+        }
+        
+    }
+
+}
 
 
 # Database

@@ -114,7 +114,7 @@
                     <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="#products" title="catalog">catalog</a></li>
                     {% endif %}
                     <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="#review" title="reviews">reviews</a></li>
-                    <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="#support" title="support">support</a></li>
+                    <li class="nav-item"> <a class="nav-link nav-bar-item px-0" href="{% url 'baseapp:supports' %}" title="support">Support Chat</a></li>
                   </ul>
                 </div>
               </div>
@@ -128,7 +128,7 @@
                         <!-- Manage Animal Uploads Card -->
                         <div class="w-full md:w-1/2 p-4">
                             <div class="relative bg-black rounded-lg overflow-hidden shadow">
-                                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/animals-bg.jpg" alt="Manage Animal Uploads">
+                                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/animals-bg.jpg" alt="Want to adopt pet">
                                 <div class="absolute inset-0 flex items-center justify-center">
                                     <a href="{% url 'baseapp:animals_for_adoption' %}" class="text-white font-bold text-xl md:text-2xl lg:text-3xl bg-opacity-50 bg-black p-5 rounded">
                                        Want to Adopt Pet?
@@ -140,7 +140,7 @@
                         <!-- Manage Petcare Products Card -->
                         <div class="w-full md:w-1/2 p-4">
                             <div class="relative bg-black rounded-lg overflow-hidden shadow">
-                                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/petcare-products-bg.jpg" alt="Manage Petcare Products">
+                                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/petcare-products-bg.jpg" alt="Up for Daycare!">
                                 <div class="absolute inset-0 flex items-center justify-center">
                                     <a href="{% url 'baseapp:animals_for_daycare' %}" class="text-white font-bold text-xl md:text-2xl lg:text-3xl bg-opacity-50 bg-black p-5 rounded">
                                         Up for Daycare!

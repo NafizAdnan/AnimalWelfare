@@ -142,7 +142,7 @@
         <!-- Manage Petcare Products Card -->
         <div class="w-full md:w-1/2 p-4">
             <div class="relative bg-black rounded-lg overflow-hidden shadow">
-                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/petcare-products-bg.jpg" alt="Manage Petcare Products">
+                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/petcare-products-bg.jpeg" alt="Manage Petcare Products">
                 <div class="absolute inset-0 flex items-center justify-center">
                     <a href="{% url 'baseapp:manage_accessories' %}" class="text-white font-bold text-xl md:text-2xl lg:text-3xl bg-opacity-50 bg-black p-5 rounded">
                         Manage Petcare Products
@@ -170,12 +170,13 @@
         <div class="w-full md:w-1/2 p-4">
             <div class="relative bg-black rounded-lg overflow-hidden shadow">
                 <!-- Placeholder Image -->
-                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/placeholder-bg.jpg" alt="Placeholder">
+                <img class="h-56 w-full object-cover object-center opacity-75" src="/assets/img/placeholder-bg.jpg" alt="Adoption/Sitting Requests">
                 <div class="absolute inset-0 flex items-center justify-center">
                     <!-- Placeholder Text -->
-                    <div class="text-white font-bold text-xl md:text-2xl lg:text-3xl bg-opacity-50 bg-black p-5 rounded">
-                        Placeholder Text
-                    </div>
+                  <a href="{% url 'baseapp:manage_adopt' %}" class="text-white font-bold text-xl md:text-2xl lg:text-3xl bg-opacity-50 bg-black p-5 rounded">
+                     Manage Adoption/Sitting Requests
+                  </a>
+
                 </div>
             </div>
         </div>

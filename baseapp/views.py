@@ -16,6 +16,7 @@ from django.conf import settings
 from .models import *
 from django.urls import reverse_lazy
 from pprint import pprint
+from django.urls import reverse
 
 # Create your views here.
 
@@ -453,3 +454,68 @@ def animalsForDaycare(request):
 def productsForSale(request):
     products = Accessories.objects.all
     return render(request, 'baseapp/products_for_sale.html', {'products':products})
+
+
+@login_required(login_url='signin')
+def supports(request):
+    supports = Support.objects.all()
+    return render(request,'baseapp/supports.html', {'supports':supports})
+
+@login_required(login_url='signin')
+def support(request,slug):
+    support = Support.objects.get(slug=slug)
+    return render(request,'baseapp/support.html', {'support':support})
+
+@login_required(login_url='signin')
+def animal_detail(request, pk):
+    animal = get_object_or_404(Animal, pk=pk)
+
+    return render(request, 'baseapp/animal_detail.html', {'animal': animal})
+
+@login_required(login_url='signin')
+def request_adoption(request, pk):
+    # Fetch the animal object by its ID
+    animal = get_object_or_404(Animal, pk=pk)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        age = request.POST.get('age')
+        breed = request.POST.get('breed')
+        description = request.POST.get('description')
+        location = request.POST.get('location')
+        contact = request.POST.get('contact')
+        vaccinated = request.POST.get('vaccinated', False) == 'on'
+        available_for = request.POST.get('available_for')
+        animal.adopted = True
+        animal.save()
+
+        # Logic to handle adoption request
+        # For example, you might want to notify the admin or perform other actions
+        messages.success(request, "Adoption Request Successful")
+        
+    # Redirect to a success page or to the animal detail page
+        #return redirect(reverse('baseapp:adoption_history', kwargs={'pk': pk}))
+        
+    return render(request, 'baseapp/animal_detail.html')
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+def manage_adopt(request):
+    animals = Animal.objects.all()
+    pending = animals.filter(approved=False)
+    return render(request, 'baseapp/manage_adopt.html', {'pending':pending})
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+def approve_adopt(request,pk):
+    animals = Animal.objects.filter(approved=True)
+    animals.save()
+    print(animals)
+    messages.success(request, f"{animals.title} has been approved for adoption.")
+    return render(request, 'baseapp/approve_adopt.html', {'animals':animals})
+
+#@login_required(login_url='signin')
+#def adoptionHistory(request, username):
+#    user = User.objects.get(username=username)
+#    animals = Animal.objects.filter(adopted_by=user)
+#   return render(request, 'baseapp/adoption_history.html', {'animals':animals})
+
