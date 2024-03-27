@@ -125,7 +125,7 @@ class Animal(models.Model):
     available_for = models.CharField(max_length=20, default='adoption')
     date_uploaded = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
-
+    adopted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,related_name='adopted_animals')
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -167,3 +167,6 @@ class Accessories(models.Model):
     def get_absolute_url(self):
         return reverse('accessory-detail',args=(str(self.id)))
     
+class Support(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
