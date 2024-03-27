@@ -1,6 +1,6 @@
 {% extends 'main.html' %}
+{% block title %}User Profile{% endblock title %}
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <div class="bg-gray-100">
     <div class="container mx-auto py-8">
         <div class="grid grid-cols-4 sm:grid-cols-12 gap-6 px-4">
@@ -16,15 +16,16 @@
                         <p class="text-gray-700">@{{ user.username }}</p>
                         <div class="mt-6 flex flex-wrap gap-4 justify-center">
                             <a href="{% url 'baseapp:update_profile' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Update Profile</a>
+                            <a href="{% url 'baseapp:change_password' %}" class="text-blue-500 hover:text-blue-700 hover:underline">Change Password</a>
                         </div>
                     </div>
                     <hr class="my-6 border-t border-gray-300">
                     <div class="flex flex-col">
                         <span class="text-gray-700 uppercase font-bold tracking-wider mb-2">ACTIVITES</span>
                         <ul>
-                            <li class="mb-2"><a href="{% url 'baseapp:upload_history' user.username %}" class="text-blue-500 hover:text-blue-600">Upload History</a></li>
-                            <li class="mb-2"><a href="#" class="text-blue-500 hover:text-blue-600">Order History</a></li>
-                            <li class="mb-2"><a href="#" class="text-blue-500 hover:text-blue-600">Payment History</a></li>
+                            <li class="mb-2"><a href="{% url 'baseapp:upload_history' user.username %}" class="text-blue-500 hover:text-blue-700 hover:underline">Upload History</a></li>
+                            <li class="mb-2"><a href="#" class="text-blue-500 hover:text-blue-700">Order History</a></li>
+                            <li class="mb-2"><a href="#" class="text-blue-500 hover:text-blue-700">Payment History</a></li>
                         </ul>
                     </div>
                 </div>

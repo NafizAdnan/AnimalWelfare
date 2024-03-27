@@ -46,8 +46,10 @@
                 {% for animal in animals %}
                 <tr class="bg-white border-b hover:bg-gray-100">
                     <td class="px-6 py-4 text-right space-x-2">
-                        <a href="{% url 'baseapp:update_animal' animal.id %}" class="font-bold text-blue-600 hover:underline">Edit</a>
-                        <a href="#" class="font-bold text-red-600 hover:underline" @click="openModal = true">Delete</a>
+                        <a href="{% url 'baseapp:update_animal' animal.id %}" class="font-bold text-blue-600 bg-blue-100 hover:underline">Edit</a>
+                        <a type="button" class="font-bold text-red-600 hover:underline bg-red-100" data-toggle="modal"
+                            data-target="#deleteConfirmationModal" data-id="{{ animal.id }}"
+                            data-name="{{ animal.title }}">Delete</button>
                     </td>
                     <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ animal.title }}</td>
                     <td class="px-6 py-4">{{ animal.age }} months</td>
@@ -114,4 +116,46 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog my-modal-position">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete "<span id="deleteAnimalName"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteAnimalForm" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="animal_id" id="modalAnimalId" value="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var animalId = button.data('id');
+        var animalName = button.data('title');
+        var modal = $(this);
+        modal.find('.modal-body #deleteAnimalName').text(animalName);
+        modal.find('.modal-body #modalAnimalId').val(animalId);
+        // Set form's action. Ensure the URL name 'baseapp:delete_animal' matches your actual URL name in Django urls.py
+        var deleteFormAction = "{% url 'baseapp:delete_animal' 999999 %}".replace('999999', animalId);
+        modal.find("#deleteAnimalForm").attr("action", deleteFormAction);
+    });
+</script>
+
 {% endblock content %}

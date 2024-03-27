@@ -38,12 +38,17 @@
     <link href="{% static 'css/user-rtl.css' %}" rel="stylesheet" id="user-style-rtl">
     <link href="{% static 'css/user.css' %}" rel="stylesheet" id="user-style-default">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    {% block extra_css %}    {% endblock extra_css %}
 
 </head>
 
 <body>
 
     {% include "header.html" %}
+
+    {% include "message.html" %}
 
     {% block content %}
 
@@ -55,14 +60,16 @@
 <!-- ===============================================-->
 <!--    JavaScripts-->
 <!-- ===============================================-->
-<script src="vendors/popper/popper.min.js"></script>
-<script src="vendors/bootstrap/bootstrap.min.js"></script>
-<script src="vendors/is/is.min.js"></script>
-<script src="vendors/countup/countUp.umd.js"></script>
-<script src="vendors/swiper/swiper-bundle.min.js"></script>
-<script src="vendors/lodash/lodash.min.js"></script>
+<script src="{% static 'vendors/popper/popper.min.js' %}"></script>
+<script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>
+<script src="{% static 'vendors/is/is.min.js' %}"></script>
+<script src="{% static 'vendors/countup/countUp.umd.js' %}"></script>
+<script src="{% static 'vendors/swiper/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>
 <script src="https://polyfill.io/v3/polyfill.min.js?features=window.scroll"></script>
-<script src="vendors/list.js/list.min.js"></script>
-<script src="assets/js/theme.js"></script>
+<script src="{% static 'vendors/list.js/list.min.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+
+{% block extra_js %}    {% endblock extra_js %}
 
 </html>

@@ -154,3 +154,7 @@ INTERNAL_IPS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+IMAGGA_API_KEY = 'acc_2c50c2a33049d25'
+IMAGGA_API_SECRET = 'c6cfd170d8b52a7c77196649bb5895dd'
+IMAGGA_API_AUTH_HEADER = 'Basic YWNjXzJjNTBjMmEzMzA0OWQyNTpjNmNmZDE3MGQ4YjUyYTdjNzcxOTY2NDliYjU4OTVkZA=='
+TEMP_UPLOAD_DIR = os.path.join(MEDIA_ROOT, 'temp_uploads')
