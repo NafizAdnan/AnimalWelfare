@@ -4,12 +4,6 @@ from PIL import Image
 from django.urls import reverse
 from datetime import date
 from django.conf import settings
-from django.core.validators import FileExtensionValidator
-
-
-def user_directory_path(instance, filename):
-    return 'user_{0}/{1}'.format(instance.user.username, filename)
-
 # Create your models here.
 
 class UserManager(BaseUserManager):
@@ -59,8 +53,8 @@ class User(AbstractBaseUser):
     contact = models.CharField(max_length=15, null=True, blank=True)
     address = models.CharField(max_length=100, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures', null=True, blank=True)
-    dob = models.DateField(default=None, null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
     preferences = []
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -114,14 +108,13 @@ class Animal(models.Model):
     age = models.IntegerField()
     breed = models.CharField(max_length=20)
     description = models.TextField()
-    picture = models.ImageField(upload_to=user_directory_path, null=True, blank=True)
+    picture = models.ImageField(upload_to='animal_pictures/', null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     contact = models.CharField(max_length=20, null=True, blank=True)
-    video = models.FileField(upload_to=user_directory_path, null=True, blank=True,
-                             validators=[FileExtensionValidator(allowed_extensions=['MOV', 'avi', 'mp4', 'webm', 'mkv'])])
+    video = models.FileField(upload_to='animal_videos/', null=True, blank=True)
     vaccinated = models.BooleanField(default=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # user_identifier = models.CharField(max_length=100, null=True, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    uploaded_by_identifier = models.CharField(max_length=100, null=True, blank=True)
     available_for = models.CharField(max_length=20, default='adoption')
     date_uploaded = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
@@ -137,6 +130,10 @@ class Animal(models.Model):
             max_size = (150,150)
             img.thumbnail(max_size)
             img.save(self.picture.path)
+        
+        if self.video:
+            vid = self.video
+            vid.save(self.video.path)
     
     def get_absolute_url(self):
         return reverse('animal-detail',args=(str(self.id)))
@@ -166,7 +163,7 @@ class Accessories(models.Model):
     
     def get_absolute_url(self):
         return reverse('accessory-detail',args=(str(self.id)))
-    
+
 class Support(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
