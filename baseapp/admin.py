@@ -5,4 +5,3 @@ from .models import *
 
 admin.site.register(User)
 admin.site.register(Animal)
-admin.site.register(Support)

@@ -46,14 +46,21 @@ urlpatterns = [
      path('animal/for_adoption', views.animalsForAdoption, name='animals_for_adoption'),
      path('animal/for_daycare', views.animalsForDaycare, name='animals_for_daycare'),
      path('product/for_sale', views.productsForSale, name='products_for_sale'),
-     path('supports',views.supports,name='supports'),
-     path('supports/<slug:slug>',views.support,name='support'),
      path('animal/<int:pk>/', views.animal_detail, name='animal_detail'),
      path('request-adoption/<int:pk>/', views.request_adoption, name='request_adoption'),
      path('manage_adopt/', views.manage_adopt, name='manage_adopt'),
      path('approve_adopt/<int:pk>/', views.approve_adopt, name='approve_adopt'),
      #path('user/<int:pk>/upload-history', views.adoptionHistory, name='adoption_history'),
      path('update-password', views.change_password, name='change_password'),
-
+     path('create-ticket', views.create_ticket, name='create_ticket'),
+     path('ticket/<int:ticket_id>', views.ticket_detail, name='ticket_detail'),
+     path('ticket/<int:ticket_id>/message', views.add_message, name='add_message'),
+     path('ticket-list', views.list_tickets, name='list_tickets'),
+     path('ticket/<int:ticket_id>/accept/', views.accept_ticket, name='accept_ticket'),
+     path('ticket/<int:ticket_id>/assign/', views.assign_ticket, name='assign_ticket'),
+     path('ticket/<int:ticket_id>/close/', views.close_ticket, name='close_ticket'),
+     # path('ticket/<int:ticket_id>/reopen/', views.reopen_ticket, name='reopen_ticket'),
+     path('ticket/<ticket_id>/delete/', views.decline_ticket, name='decline_ticket'),
+     
      ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

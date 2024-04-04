@@ -166,7 +166,28 @@ class Accessories(models.Model):
     
     def get_absolute_url(self):
         return reverse('accessory-detail',args=(str(self.id)))
-    
-class Support(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+
+
+class Ticket(models.Model):
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+    )
+    title = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=6, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+    # assigned_to = models.ForeignKey(User, related_name='assigned_tickets', on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'is_staff': True})
+
+    def __str__(self):
+        return self.title
+
+class Message(models.Model):
+    ticket = models.ForeignKey(Ticket, related_name='messages', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message by {self.user.username} on {self.created_at}"

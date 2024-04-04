@@ -12,7 +12,6 @@ from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
 from django.conf import settings
-# from django.views.generic import ListView, DetailView,CreateView,UpdateView,DeleteView
 from .models import *
 from django.urls import reverse_lazy
 from pprint import pprint
@@ -465,17 +464,6 @@ def productsForSale(request):
     products = Accessories.objects.all
     return render(request, 'baseapp/products_for_sale.html', {'products':products})
 
-
-@login_required(login_url='signin')
-def supports(request):
-    supports = Support.objects.all()
-    return render(request,'baseapp/supports.html', {'supports':supports})
-
-@login_required(login_url='signin')
-def support(request,slug):
-    support = Support.objects.get(slug=slug)
-    return render(request,'baseapp/support.html', {'support':support})
-
 @login_required(login_url='signin')
 def animal_detail(request, pk):
     animal = get_object_or_404(Animal, pk=pk)
@@ -484,7 +472,6 @@ def animal_detail(request, pk):
 
 @login_required(login_url='signin')
 def request_adoption(request, pk):
-    # Fetch the animal object by its ID
     animal = get_object_or_404(Animal, pk=pk)
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -497,24 +484,16 @@ def request_adoption(request, pk):
         available_for = request.POST.get('available_for')
         animal.adopted = True
         animal.save()
-
-        # Logic to handle adoption request
-        # For example, you might want to notify the admin or perform other actions
         messages.success(request, "Adoption Request Successful")
-        
-    # Redirect to a success page or to the animal detail page
-        #return redirect(reverse('baseapp:adoption_history', kwargs={'pk': pk}))
         
     return render(request, 'baseapp/animal_detail.html')
 
-@login_required(login_url='signin')
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def manage_adopt(request):
     animals = Animal.objects.all()
     pending = animals.filter(approved=False)
     return render(request, 'baseapp/manage_adopt.html', {'pending':pending})
 
-@login_required(login_url='signin')
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def approve_adopt(request,pk):
     animals = Animal.objects.filter(approved=True)
@@ -529,3 +508,77 @@ def approve_adopt(request,pk):
 #    animals = Animal.objects.filter(adopted_by=user)
 #   return render(request, 'baseapp/adoption_history.html', {'animals':animals})
 
+@login_required(login_url='signin')
+def create_ticket(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', '')
+        message_body = request.POST.get('message_body', '')
+        if title and message_body:
+            ticket = Ticket(title=title, user=request.user)
+            ticket.save()
+            Message.objects.create(ticket=ticket, user=request.user, body=message_body)
+            messages.success(request, "Ticket Created!!")
+            return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
+        
+    return render(request, 'baseapp/create_ticket.html')
+
+@login_required(login_url='signin')
+def ticket_detail(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    messages = ticket.messages.all()
+    return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket, 'inbox': messages})
+
+@login_required(login_url='signin')
+def add_message(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    if request.method == 'POST':
+        body = request.POST.get('body', '')
+        if body:
+            Message.objects.create(ticket=ticket, user=request.user, body=body)
+            return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
+    return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket})
+
+@login_required(login_url='signin')
+def list_tickets(request):
+    if request.user.is_superuser:
+        tickets = Ticket.objects.all()
+    else:
+        tickets = Ticket.objects.filter(user=request.user)
+    return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
+
+@login_required(login_url='signin')
+@user_passes_test(lambda u: u.is_superuser)
+def accept_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    ticket.accepted = True
+    ticket.save()
+    messages.success(request, "Ticket Accepted!!")
+    return redirect('baseapp:list_tickets')
+
+@login_required(login_url='signin')
+@user_passes_test(lambda u: u.is_superuser)
+def decline_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    ticket.delete()
+    messages.info(request, "Ticket Declined!!")
+    return redirect('baseapp:list_tickets')
+
+@login_required(login_url='signin')
+def close_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    ticket.status = 'closed'
+    ticket.save()
+    messages.warning(request, "Ticket Closed!!")
+    return redirect('baseapp:list_tickets')
+
+@login_required(login_url='signin')
+@user_passes_test(lambda u: u.is_superuser)
+def assign_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    if request.method == 'POST':
+        staff_member_id = request.POST.get('staff_member')
+        if staff_member_id:
+            ticket.assigned_to_id = staff_member_id
+            ticket.save()
+            return redirect('list_tickets')
+    return render(request, 'baseapp/assign_ticket.html', {'ticket': ticket})
