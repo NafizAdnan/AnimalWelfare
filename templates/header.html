@@ -1,6 +1,11 @@
+<!doctype html>
+
+<html lang="en">
+
 {% load static %}
 <head>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/5135d630a7.js" crossorigin="anonymous"></script>
     <style>
         .submenu {
             color: black;
@@ -22,6 +27,53 @@
         .navbar, .container, .d-flex {
             overflow: visible !important;
         }
+        .notification {
+            background-color: #0d6efd;
+            color: white;
+            text-decoration: none;
+            padding: 4px 24px;
+            margin-right: 20px;
+            margin-left: 20px;
+            position: relative;
+            display: inline-block;
+            border-radius: 2px;
+            font-size: 20px;
+        }
+
+        .notification:hover {
+            background: #0b5ed7;
+            color: #fff;
+        }
+
+        .notification .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 8px 8px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+        }
+
+        .notification-section .dropdown-toggle::after {
+            content: none;
+        }
+
+        .dropdown-toggle::after {
+            color: #fff;
+        }
+
+        #notifications-dropdown li {
+            max-width: 500px;
+            word-wrap: break-word;
+            display: inline-block;
+            white-space: normal;
+        }
+
+        #notifications-dropdown.dropdown-menu {
+            width: 15rem;
+        }
+
     </style>
 </head>
 <body style="background-color: antiquewhite">
@@ -38,14 +90,38 @@
               class="ms-2 ms-md-3 submenu"
               href="{% url 'baseapp:add_animal' %}"
               ><span class="uil uil-bill"></span
-              ><span class="ms-1 fs-10 fs-sm-9">Add Animal</span></a
-            ><a class="ms-2 ms-md-3 submenu" href="#!"
-              ><span class="uil uil-file-heart"></span
-              ><span class="ms-1 fs-10 fs-sm-9">wishlist</span></a
-            ><a class="ms-2 ms-md-3 submenu" href="#!"
-              ><span class="uil uil-shopping-cart"></span
-              ><span class="ms-1 fs-10 fs-sm-9">cart</span></a
-            >
+              ><span class="ms-1 fs-10 fs-sm-9">Add Animal</span></a>
+              <!-- <a class="ms-2 ms-md-3 submenu" href="#!"
+              ><a href="#" class="notification">
+              <span>Notification</span>
+              <span class="badge">3</span>
+              
+            </a> -->
+            <li class="nav-item dropdown notification-section">
+              <a href="#" class="notification dropdown-toggle" id="navbarDropdown" role="button"
+                  data-bs-toggle="dropdown" aria-expanded="true">
+                  <span><i class='fa fa-bell'></i></span>
+                  <span class="badge" id="notification-badge">0</span>
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown" id="notifications-dropdown"
+                  data-popper-placement="bottom-end"
+                  style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(-70px, 42px, 0px);">
+                  
+                  <!-- <li class="dropdown-item">Hello</li>
+                  <hr class="dropdown-divider"> -->
+
+                  {% for i in notifications %}
+                  <li class="dropdown-item">{{i.message}}</li>
+                  <hr class="dropdown-divider">
+                  {% endfor %}
+                  {% comment %} <li class='dropdown-item'>Hello</li>
+                  <hr class="dropdown-divider"> {% endcomment %}
+                  
+              </ul>
+          </li>
+
+
+
             <!-- <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:signout' %}"
               ><span class="uil uil-user-circle"></span
               ><span class="ms-1 fs-10 fs-sm-9">Logout</span></a
@@ -147,10 +223,11 @@
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
-                        href="#products"
-                        title="catalog"
-                        >Catalog</a
+                        href="{% url 'baseapp:animal_info' %}"
+                        title="facts"
+                        >Animal Facts</a
                       >
+
                     </li>
                     <li class="nav-item">
                       <a
@@ -163,7 +240,7 @@
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
-                        href="#support"
+                        href="{% url 'baseapp:supports' %}"
                         title="support"
                         >Support</a
                       >
@@ -173,13 +250,38 @@
               </div>
             </div>
           </nav>
+    
+          {{ room_name|json_script:"room-name" }}
+          <script>
+              const roomName = JSON.parse(document.getElementById('room-name').textContent);
+      
+              const NotificationSocket = new WebSocket(
+                  'ws://'
+                  + window.location.host
+                  + '/ws/notification/'
+                  + roomName
+                  + '/'
+              );
+      
+              NotificationSocket.onmessage = function(e) {
+                  const data = JSON.parse(e.data);
+                  console.log(data);
+                  document.getElementById("notifications-dropdown").innerHTML = "<li class='dropdown-item'>" + data + "</li><hr class='dropdown-divider'>"+ document.getElementById("notifications-dropdown").innerHTML;
+                  document.getElementById("notification-badge").innerHTML = parseInt(document.getElementById("notification-badge").innerHTML) + 1;
+                  //document.querySelector('#chat-log').value += (data.message + '\n');
+              };
+      
+              NotificationSocket.onclose = function(e) {
+                  console.error('Chat socket closed unexpectedly');
+              };
+      
+
+          </script>
         </div>
       </div>
     </div>
   </main>
-</body>
-
-<script>
+  <script>
     document.addEventListener('DOMContentLoaded', function() {
         const dropdown = document.querySelector('.dropdown');
         const dropdownMenu = dropdown.querySelector('.dropdown-menu');
@@ -203,3 +305,7 @@
         });
     });
 </script>
+</body>
+
+
+</html>

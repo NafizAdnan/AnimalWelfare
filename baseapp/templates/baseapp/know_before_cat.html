@@ -1,0 +1,56 @@
+<!-- know_before.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Know Before</title>
+</head>
+<body>
+    <h1>Know Before</h1>
+    
+    <!-- Form to input cat name -->
+    <form method="post">
+        {% csrf_token %}
+        <label for="cat_name">Enter Cat Name:</label>
+        <input type="text" id="cat_name" name="cat_name" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Display cat information -->
+    {% if api_response %}
+        <div>
+            <h2>{{ api_response.0.name }} Information</h2>
+            
+            <div>
+                <h3>Image</h3>
+                <img src="{{ api_response.0.image_link }}" alt="{{ api_response.0.name }} Image" style="max-width: 300px;">
+            </div>
+            
+            <div>
+                <h3>Characteristics</h3>
+                <p>Length: {{ api_response.0.length }}</p>
+                <p>Origin: {{ api_response.0.origin }}</p>
+                <p>Family Friendly: {{ api_response.0.family_friendly }}</p>
+                <p>Shedding: {{ api_response.0.shedding }}</p>
+                <p>General Health: {{ api_response.0.general_health }}</p>
+                <p>Playfulness: {{ api_response.0.playfulness }}</p>
+                <p>Meowing: {{ api_response.0.meowing }}</p>
+                <p>Children Friendly: {{ api_response.0.children_friendly }}</p>
+                <p>Stranger Friendly: {{ api_response.0.stranger_friendly }}</p>
+                <p>Grooming: {{ api_response.0.grooming }}</p>
+                <p>Intelligence: {{ api_response.0.intelligence }}</p>
+                <p>Other Pets Friendly: {{ api_response.0.other_pets_friendly }}</p>
+                <p>Weight Range: {{ api_response.0.min_weight }} - {{ api_response.0.max_weight }} lbs</p>
+                <p>Life Expectancy: {{ api_response.0.min_life_expectancy }} - {{ api_response.0.max_life_expectancy }} years</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Display error message if any -->
+    {% if error_message %}
+        <p>{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>

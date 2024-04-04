@@ -49,11 +49,16 @@ urlpatterns = [
      path('supports',views.supports,name='supports'),
      path('supports/<slug:slug>',views.support,name='support'),
      path('animal/<int:pk>/', views.animal_detail, name='animal_detail'),
-     path('request-adoption/<int:pk>/', views.request_adoption, name='request_adoption'),
+     path('request-adoption/<int:id>/', views.request_adoption, name='request_adoption'),
      path('manage_adopt/', views.manage_adopt, name='manage_adopt'),
-     path('approve_adopt/<int:pk>/', views.approve_adopt, name='approve_adopt'),
+     #path('approve_adopt/<int:pk>/', views.approve_adopt, name='approve_adopt'),
      #path('user/<int:pk>/upload-history', views.adoptionHistory, name='adoption_history'),
      path('update-password', views.change_password, name='change_password'),
+     path('animal-info/', views.animal_info, name='animal_info'),
+     path('know_before/', views.know_before, name='know_before'),
+     path('know_before_cat/', views.know_before_cat, name='know_before_cat'),
+     path('know_before_dog/', views.know_before_dog, name='know_before_dog'),
+     #path('test/',views.test,name="home"),
+]
 
-     ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

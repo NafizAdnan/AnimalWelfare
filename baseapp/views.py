@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
+from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
 from django.contrib.sites.shortcuts import get_current_site
 # from django.contrib.auth.models import User
@@ -20,7 +21,7 @@ from django.urls import reverse
 from .utils import *
 import os
 from shutil import copyfile, move
-
+from channels.layers import get_channel_layer
 # Create your views here.
 
 def home(request):
@@ -28,7 +29,7 @@ def home(request):
         return redirect('baseapp:admin_dashboard')
     if request.user.is_authenticated:
         return redirect('baseapp:user_dashboard')
-    return render(request, 'baseapp/index.html')
+    return render(request, 'baseapp/index.html',{'room_name':"broadcast"})
 
 def signup(request):
 
@@ -448,7 +449,7 @@ def viewProduct(request, id):
 
 @login_required(login_url='signin')
 def userDashboard(request):
-    return render(request, 'baseapp/user_dashboard.html')
+    return render(request, 'baseapp/user_dashboard.html',{'room_name':"broadcast"})
 
 @login_required(login_url='signin')
 def animalsForAdoption(request):
@@ -483,9 +484,9 @@ def animal_detail(request, pk):
     return render(request, 'baseapp/animal_detail.html', {'animal': animal})
 
 @login_required(login_url='signin')
-def request_adoption(request, pk):
+def request_adoption(request, id):
     # Fetch the animal object by its ID
-    animal = get_object_or_404(Animal, pk=pk)
+    animal = get_object_or_404(Animal, id=id)
     if request.method == 'POST':
         title = request.POST.get('title')
         age = request.POST.get('age')
@@ -503,7 +504,7 @@ def request_adoption(request, pk):
         messages.success(request, "Adoption Request Successful")
         
     # Redirect to a success page or to the animal detail page
-        #return redirect(reverse('baseapp:adoption_history', kwargs={'pk': pk}))
+        redirect('baseapp:animal_detail', id=id)
         
     return render(request, 'baseapp/animal_detail.html')
 
@@ -514,14 +515,14 @@ def manage_adopt(request):
     pending = animals.filter(approved=False)
     return render(request, 'baseapp/manage_adopt.html', {'pending':pending})
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
-def approve_adopt(request,pk):
-    animals = Animal.objects.filter(approved=True)
-    animals.save()
-    print(animals)
-    messages.success(request, f"{animals.title} has been approved for adoption.")
-    return render(request, 'baseapp/approve_adopt.html', {'animals':animals})
+# @login_required(login_url='signin')
+# @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+# def approve_adopt(request,pk):
+#     animals = Animal.objects.filter(approved=True)
+#     animals.save()
+#     print(animals)
+#     messages.success(request, f"{animals.title} has been approved for adoption.")
+#     return render(request, 'baseapp/approve_adopt.html', {'animals':animals})
 
 #@login_required(login_url='signin')
 #def adoptionHistory(request, username):
@@ -529,3 +530,87 @@ def approve_adopt(request,pk):
 #    animals = Animal.objects.filter(adopted_by=user)
 #   return render(request, 'baseapp/adoption_history.html', {'animals':animals})
 
+
+
+from django.shortcuts import render
+import requests
+@login_required(login_url='signin')
+def animal_info(request):
+    # Initialize variables
+    animal_name = ''
+    api_response = ''
+
+    # Check if the form is submitted
+    if request.method == 'POST':
+        # Extract the animal name from the form
+        animal_name = request.POST.get('animal_name', '')
+
+        # Construct the API URL with the provided animal name
+        api_url = 'https://api.api-ninjas.com/v1/animals?name={}'.format(animal_name)
+
+        # Make the API call
+        response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
+
+        # Check the response status
+        if response.status_code == requests.codes.ok:
+            # If successful, get the API response
+            api_response = response.json()
+        else:
+            # If there's an error, display the error message
+            api_response = {'error': 'Error occurred while fetching data'}
+
+    # Render the template with the form and API response
+    return render(request, 'baseapp/animal_info.html', {'animal_name': animal_name, 'api_response': api_response})
+
+@login_required(login_url='signin')
+def know_before(request):
+    return render(request, 'baseapp/know_before.html')
+
+@login_required(login_url='signin')
+def know_before_cat(request):
+    if request.method == 'POST':
+        name = request.POST.get('cat_name')  # Get the value of 'cat_name' from the form
+        api_url = 'https://api.api-ninjas.com/v1/cats?name={}'.format(name)
+        response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
+        if response.status_code == requests.codes.ok:
+            api_response = response.json()
+            return render(request, 'baseapp/know_before_cat.html', {'api_response': api_response})
+        else:
+            error_message = "Error: {} {}".format(response.status_code, response.text)
+            return render(request, 'baseapp/know_before_cat.html', {'error_message': error_message})
+    else:
+            # Render an empty form when the page is initially loaded
+        return render(request, 'baseapp/know_before_cat.html')
+    
+@login_required(login_url='signin')
+def know_before_dog(request):
+    if request.method == 'POST':
+        name = request.POST.get('dog_name')  # Get the value of 'cat_name' from the form
+        api_url = 'https://api.api-ninjas.com/v1/dogs?name={}'.format(name)
+        response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
+        if response.status_code == requests.codes.ok:
+            api_response = response.json()
+            return render(request, 'baseapp/know_before_dog.html', {'api_response': api_response})
+        else:
+            error_message = "Error: {} {}".format(response.status_code, response.text)
+            return render(request, 'baseapp/know_before_dog.html', {'error_message': error_message})
+    else:
+            # Render an empty form when the page is initially loaded
+        return render(request, 'baseapp/know_before_dog.html')
+
+from asgiref.sync import async_to_sync    
+# @login_required(login_url='signin')
+# def test(request):
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         "notification_broadcast",
+#         {
+#             'type': 'send_notification',
+#             'message': "Notification"
+#         }
+#     )
+#     return HttpResponse("Done")
+# from .tasks import test_func
+# def test(request):
+#     test_func.delay()
+#     return HttpResponse("Done")

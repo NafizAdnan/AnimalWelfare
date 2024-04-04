@@ -41,7 +41,7 @@
 </div>
 
 {% endblock content %}
-{% block scripts %}
+<!-- {% block scripts %}
 {{ support.slug|json_script:"json-supportname" }}
 {{ request.user.username|json_script:"json-username"}}
 
@@ -78,7 +78,7 @@
     chatSocket.onclose = function(e){
         console.log('onclose')
     }
-    //
+    
 
     document.querySelector('#chat-message-submit').onclick = function(e){
         e.preventDefault();
@@ -97,4 +97,19 @@
 
 
 </script>
-{% endblock %}
+{% endblock %} -->
+
+<script>
+    const websocketProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const wsEndpoint = `${websocketProtocol}://${window.location.host}/ws/notification/{{support_name}}/`;
+    const socket = new WebSocket(wsEndpoint);
+
+    socket.onopen = (event) => {
+        console.log("WebSocket connection opened!");
+    };
+
+    socket.onclose = (event) => {
+        console.log("WebSocket connection closed!");
+    };
+
+</script>

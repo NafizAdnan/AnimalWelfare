@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Information</title>
+</head>
+<body>
+    <h1>Dog Information</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="cat_name">Enter Dog Name:</label>
+        <input type="text" id="dog_name" name="dog_name" required>
+        <button type="submit">Submit</button>
+    </form>
+
+
+    
+    <!-- Display dog information -->
+    {% if api_response %}
+        <div>
+            <h2>{{ api_response.0.name }} Information</h2>
+            
+            <div>
+                <h3>Image</h3>
+                <img src="{{ api_response.0.image_link }}" alt="{{ api_response.0.name }} Image" style="max-width: 300px;">
+            </div>
+            
+            <div>
+                <h3>Characteristics</h3>
+                <p>Good with Children: {{ api_response.0.good_with_children }}</p>
+                <p>Good with Other Dogs: {{ api_response.0.good_with_other_dogs }}</p>
+                <p>Shedding: {{ api_response.0.shedding }}</p>
+                <p>Grooming: {{ api_response.0.grooming }}</p>
+                <p>Drooling: {{ api_response.0.drooling }}</p>
+                <p>Coat Length: {{ api_response.0.coat_length }}</p>
+                <p>Good with Strangers: {{ api_response.0.good_with_strangers }}</p>
+                <p>Playfulness: {{ api_response.0.playfulness }}</p>
+                <p>Protectiveness: {{ api_response.0.protectiveness }}</p>
+                <p>Trainability: {{ api_response.0.trainability }}</p>
+                <p>Energy: {{ api_response.0.energy }}</p>
+                <p>Barking: {{ api_response.0.barking }}</p>
+                <p>Life Expectancy: {{ api_response.0.min_life_expectancy }} - {{ api_response.0.max_life_expectancy }} years</p>
+                <p>Height (Male): {{ api_response.0.min_height_male }} - {{ api_response.0.max_height_male }} inches</p>
+                <p>Height (Female): {{ api_response.0.min_height_female }} - {{ api_response.0.max_height_female }} inches</p>
+                <p>Weight (Male): {{ api_response.0.min_weight_male }} - {{ api_response.0.max_weight_male }} lbs</p>
+                <p>Weight (Female): {{ api_response.0.min_weight_female }} - {{ api_response.0.max_weight_female }} lbs</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Display error message if any -->
+    {% if error_message %}
+        <p>{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>
