@@ -1,3 +1,4 @@
+from django.contrib.messages.storage import session
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
@@ -12,13 +13,13 @@ from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
 from django.conf import settings
+# from django.views.generic import ListView, DetailView,CreateView,UpdateView,DeleteView
 from .models import *
 from django.urls import reverse_lazy
 from pprint import pprint
-from django.urls import reverse
-from .utils import *
-import os
-from shutil import copyfile, move
+import json
+from django.shortcuts import render
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -71,6 +72,12 @@ def signup(request):
             return redirect('baseapp:signup')
 
         newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email, password=pass1)
+        # newUser.contact = contact
+        # Temporarily until Custom Auth Backend is Ready
+        # newUser.is_active = True
+        # newUser.is_staff = True
+        # newUser.is_superuser = True
+        # End
         newUser.is_active = True
         newUser.save()
         messages.success(request, "Your Account has been created succesfully!!")
@@ -115,17 +122,17 @@ def update_profile(request):
         user.first_name = request.POST.get('fname', user.first_name)
         user.last_name = request.POST.get('lname', user.last_name)
         user.email = request.POST.get('email', user.email)
-        user.contact = request.POST['contact'] or user.contact
-        user.address = request.POST['address'] or user.address
-        user.bio = request.POST['bio'] or user.bio
-        user.dob = request.POST.get('dob') or user.dob
-        user.profile_picture = request.FILES.get('profile_picture', user.profile_picture)
-        remove_picture = request.POST.get('remove_picture') == 'on'
-        if remove_picture:
-            # user.profile_picture = None
-            # user.profile_picture.delete(save=True)
-            user.profile_picture.delete()
-
+        
+        if 'contact' in request.POST:
+            user.contact = request.POST['contact'] or user.contact
+        if 'address' in request.POST:
+            user.address = request.POST['address'] or user.address
+        if 'bio' in request.POST:
+            user.bio = request.POST['bio'] or user.bio
+        user.dob = request.POST.get('dob', user.dob)
+        if 'profile_picture' in request.FILES:
+            user.profile_picture = request.FILES['profile_picture']
+        
         user.save()
         messages.success(request, "Profile Updated Successfully!!")
         return redirect('baseapp:user_profile', username=user.username)
@@ -179,6 +186,8 @@ def signout(request):
     messages.success(request, "Logged Out Successfully!!")
     return redirect('baseapp:home')
 
+
+
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -200,7 +209,11 @@ def activate(request, uidb64, token):
         return redirect('baseapp:signin')
         #return render(request, 'activation_failed.html')
 
+
+
 def account_activate(request,newUser):
+
+
     current_site = get_current_site(request)
     email_subject = "Confirm your Email @ Animal_Welfare - Django Login!!"
     message2 = render_to_string('baseapp/email_confirmation.html', {
@@ -222,6 +235,31 @@ def account_activate(request,newUser):
     messages.success(request, "Your Account has been activated!!")
     return redirect('baseapp:home')
 
+#def post(request):
+ #   return render(request,'baseapp/post.html')
+# class PostView(ListView):
+#     model = Post
+#     template_name = 'baseapp/post.html'
+
+# class AnimalDetailView(DetailView):
+#     model = Post
+#     template_name = 'baseapp/animaldetail.html'
+
+# class AddPostView(CreateView):
+#     model = Post
+#     template_name = 'add_post.html'
+#     fields = '__all__'
+
+# class UpdatePostView(UpdateView):
+#     model = Post
+#     template_name = 'update_post.html'
+#     fields = ['title','contact_info','body','picture','phone_number']
+
+# class DeletePostView(DeleteView):
+#     model = Post
+#     template_name = 'delete_post.html'
+#     success_url = reverse_lazy('post')
+
 @login_required(login_url='signin')
 def addAnimal(request):
     if request.method == "POST":
@@ -236,21 +274,13 @@ def addAnimal(request):
         available_for = request.POST.get('available_for')
 
         animal = Animal(title=title, age=age, breed=breed, description=description, location=location, 
-                         contact=contact, vaccinated=vaccinated, available_for=available_for, user=request.user)
+                         contact=contact, vaccinated=vaccinated, available_for=available_for, uploaded_by=request.user)
 
-        picture = request.FILES.get('picture', None)
-        if picture:
-            os.makedirs(settings.TEMP_UPLOAD_DIR, exist_ok=True)
-            temp_path = os.path.join(settings.TEMP_UPLOAD_DIR, picture.name)
-            if is_animal_in_image(picture, temp_path):
-                animal.picture = picture
-                os.remove(temp_path)
-            else:
-                os.remove(temp_path)
-                messages.error(request, "Invalid Image!!")
-                return redirect('baseapp:add_animal')
+        if 'picture' in request.FILES:
+            animal.picture = request.FILES['picture']
 
-        animal.video = request.FILES.get('video') if 'video' in request.FILES else None
+        if 'video' in request.FILES:
+            animal.video = request.FILES['video']
 
         animal.save()
 
@@ -258,31 +288,6 @@ def addAnimal(request):
         return redirect('baseapp:upload_history', username=request.user.username)
 
     return render(request, 'baseapp/add_animal.html')
-
-def is_animal_in_image(picture, path):
-    
-    with open(path, 'wb+') as destination:
-        for chunk in picture.chunks():
-            destination.write(chunk)
-
-    upload_response = upload_image_to_imagga(path)
-    print(upload_response)
-    if 'upload_id' in upload_response['result']:
-        upload_id = upload_response['result']['upload_id']
-        categories_response = get_image_categories(upload_id)
-        print(categories_response)
-        if categories_response['status']['type'] == 'success':
-            categories = categories_response['result']['categories']
-            print(categories)
-            for category in categories:
-                name = category['name']
-                for key in name:
-                    if 'animal' in name[key].lower():
-                        return True
-        else:
-            print("Error in getting categories!!")
-    
-    return False
 
 @login_required(login_url='signin')
 def updateAnimal(request, id):
@@ -297,18 +302,8 @@ def updateAnimal(request, id):
         animal.vaccinated = 'vaccinated' in request.POST and request.POST['vaccinated'] == 'on'
         animal.available_for = request.POST.get('available_for', animal.available_for)
 
-        picture = request.FILES.get('picture')
-        if picture != animal.picture:
-            os.makedirs(settings.TEMP_UPLOAD_DIR, exist_ok=True)
-            temp_path = os.path.join(settings.TEMP_UPLOAD_DIR, picture.name)
-            if is_animal_in_image(picture, temp_path):
-                animal.picture = picture
-                os.remove(temp_path)
-            else:
-                os.remove(temp_path)
-                messages.error(request, "Invalid Image!!")
-                return redirect('baseapp:update_animal', id=id)
-        
+        if 'picture' in request.FILES:
+            animal.picture = request.FILES['picture']
         if 'video' in request.FILES:
             animal.video = request.FILES['video']
 
@@ -325,8 +320,7 @@ def deleteAnimal(request, id):
     messages.success(request, "Animal Deleted Successfully!!")
     if is_admin(request.user):
         return redirect('baseapp:manage_animals')
-    # return redirect('baseapp:animal-list')
-    return redirect('baseapp:upload_history', username=request.user.username)
+    return redirect('baseapp:animal-list')
 
 def animalList(request):
     animals = Animal.objects.all()
@@ -344,7 +338,7 @@ def userProfile(request, username):
 @login_required(login_url='signin')
 def uploadHistory(request, username):
     user = User.objects.get(username=username)
-    animals = Animal.objects.filter(user=user)
+    animals = Animal.objects.filter(uploaded_by=user)
     return render(request, 'baseapp/upload_history.html', {'animals':animals})
 
 def is_admin(user):
@@ -410,12 +404,13 @@ def addAccessory(request):
 def updateAccessory(request, id):
     accessory = Accessories.objects.get(id=id)
     if request.method == "POST":
+        print(request.POST)
         title = request.POST['title']
         price = request.POST['price']
         description = request.POST['description']
         type = request.POST['type']
         color = request.POST['color']
-
+        stock = request.POST['stock']
         accessory.title = title
         accessory.price = price
         accessory.description = description
@@ -423,6 +418,7 @@ def updateAccessory(request, id):
             accessory.picture = request.FILES['picture']
         accessory.type = type
         accessory.color = color
+        accessory.stock = stock
         accessory.save()
         messages.success(request, "Accessory Updated Successfully!!")
         return redirect('baseapp:manage_accessories')
@@ -459,126 +455,124 @@ def animalsForDaycare(request):
     animals = Animal.objects.filter(available_for='Daycare', approved=True)
     return render(request, 'baseapp/animal_for_daycare.html', {'animals':animals})
 
+'''
 @login_required(login_url='signin')
 def productsForSale(request):
     products = Accessories.objects.all
     return render(request, 'baseapp/products_for_sale.html', {'products':products})
 
-@login_required(login_url='signin')
-def animal_detail(request, pk):
-    animal = get_object_or_404(Animal, pk=pk)
+'''
+# views.py
 
-    return render(request, 'baseapp/animal_detail.html', {'animal': animal})
+from django.db.models import Q
 
-@login_required(login_url='signin')
-def request_adoption(request, pk):
-    animal = get_object_or_404(Animal, pk=pk)
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        age = request.POST.get('age')
-        breed = request.POST.get('breed')
-        description = request.POST.get('description')
-        location = request.POST.get('location')
-        contact = request.POST.get('contact')
-        vaccinated = request.POST.get('vaccinated', False) == 'on'
-        available_for = request.POST.get('available_for')
-        animal.adopted = True
-        animal.save()
-        messages.success(request, "Adoption Request Successful")
-        
-    return render(request, 'baseapp/animal_detail.html')
-
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
-def manage_adopt(request):
-    animals = Animal.objects.all()
-    pending = animals.filter(approved=False)
-    return render(request, 'baseapp/manage_adopt.html', {'pending':pending})
-
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
-def approve_adopt(request,pk):
-    animals = Animal.objects.filter(approved=True)
-    animals.save()
-    print(animals)
-    messages.success(request, f"{animals.title} has been approved for adoption.")
-    return render(request, 'baseapp/approve_adopt.html', {'animals':animals})
-
-#@login_required(login_url='signin')
-#def adoptionHistory(request, username):
-#    user = User.objects.get(username=username)
-#    animals = Animal.objects.filter(adopted_by=user)
-#   return render(request, 'baseapp/adoption_history.html', {'animals':animals})
 
 @login_required(login_url='signin')
-def create_ticket(request):
-    if request.method == 'POST':
-        title = request.POST.get('title', '')
-        message_body = request.POST.get('message_body', '')
-        if title and message_body:
-            ticket = Ticket(title=title, user=request.user)
-            ticket.save()
-            Message.objects.create(ticket=ticket, user=request.user, body=message_body)
-            messages.success(request, "Ticket Created!!")
-            return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
-        
-    return render(request, 'baseapp/create_ticket.html')
+def productsForSale(request):  # Update function name to match URL pattern
+    query = request.GET.get('q')
+    sort_by = request.GET.get('sort_by')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    category = request.GET.get('category')
+    #products = Accessories.objects.all()
+    #print(query)
+    if query==None:
+        products = Accessories.objects.all()
+        if min_price:
+            products = products.filter(price__gte=min_price)
+        if max_price:
+            products = products.filter(price__lte=max_price)
 
-@login_required(login_url='signin')
-def ticket_detail(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    messages = ticket.messages.all()
-    return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket, 'inbox': messages})
+        if category:
+            products = products.filter(type=category)
 
-@login_required(login_url='signin')
-def add_message(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    if request.method == 'POST':
-        body = request.POST.get('body', '')
-        if body:
-            Message.objects.create(ticket=ticket, user=request.user, body=body)
-            return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
-    return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket})
+        if sort_by == 'price_low_to_high':
+            products = products.order_by('price')
+        elif sort_by == 'price_high_to_low':
+            products = products.order_by('-price')
+        return render(request, 'baseapp/products_for_sale.html',
+                          {'products': products, 'query': query, 'sort_by': sort_by})
 
-@login_required(login_url='signin')
-def list_tickets(request):
-    if request.user.is_superuser:
-        tickets = Ticket.objects.all()
     else:
-        tickets = Ticket.objects.filter(user=request.user)
-    return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
+        multiple_q=Q(Q(title__icontains=query)|Q(description__icontains=query))
+        products = Accessories.objects.filter(multiple_q)
+        if min_price:
+            products = products.filter(price__gte=min_price)
+        if max_price:
+            products = products.filter(price__lte=max_price)
 
-@login_required(login_url='signin')
-@user_passes_test(lambda u: u.is_superuser)
-def accept_ticket(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    ticket.accepted = True
-    ticket.save()
-    messages.success(request, "Ticket Accepted!!")
-    return redirect('baseapp:list_tickets')
+        if category:
+            products = products.filter(type=category)
 
-@login_required(login_url='signin')
-@user_passes_test(lambda u: u.is_superuser)
-def decline_ticket(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    ticket.delete()
-    messages.info(request, "Ticket Declined!!")
-    return redirect('baseapp:list_tickets')
+        if sort_by == 'price_low_to_high':
+            products = products.order_by('price')
+        elif sort_by == 'price_high_to_low':
+            products = products.order_by('-price')
+        return render(request, 'baseapp/productsearch.html',
+                          {'products': products, 'query': query, 'sort_by': sort_by})
 
-@login_required(login_url='signin')
-def close_ticket(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    ticket.status = 'closed'
-    ticket.save()
-    messages.warning(request, "Ticket Closed!!")
-    return redirect('baseapp:list_tickets')
+def add_to_cart(request, accessory_id):
+    if request.method == "POST":
+        print(request.POST)
+        accessory = get_object_or_404(Accessories, id=accessory_id)
+        if accessory.stock < 1:
+            messages.error(request, "Out of stock.")
+            return redirect('baseapp:products_for_sale')
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, accessory=accessory)
 
-@login_required(login_url='signin')
-@user_passes_test(lambda u: u.is_superuser)
-def assign_ticket(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    if request.method == 'POST':
-        staff_member_id = request.POST.get('staff_member')
-        if staff_member_id:
-            ticket.assigned_to_id = staff_member_id
-            ticket.save()
-            return redirect('list_tickets')
-    return render(request, 'baseapp/assign_ticket.html', {'ticket': ticket})
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+        return redirect('baseapp:products_for_sale')
+
+@login_required
+def remove_from_cart(request, item_id):
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    cart_item.delete()
+    messages.success(request, "Item removed from cart.")
+    return redirect('baseapp:cart')
+
+@login_required
+def adjust_cart_item(request, item_id, action):
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    if action == "add":
+        cart_item.quantity += 1
+    elif action == "subtract":
+        cart_item.quantity -= 1
+        if cart_item.quantity < 1:
+            cart_item.delete()
+            messages.success(request, "Item removed from cart.")
+            return redirect('cart_detail')
+    cart_item.save()
+    messages.success(request, "Cart updated.")
+    return redirect('baseapp:cart')
+
+@login_required
+def cart_view(request):
+    print(request.user)
+    try:
+        cart = Cart.objects.get(user=request.user)
+        print(cart)
+        items = CartItem.objects.filter(cart=cart)
+        total_price = sum(item.accessory.price * item.quantity for item in items)
+    except Cart.DoesNotExist:
+        print("Cart does not exist")
+        items = []
+        total_price = 0
+
+    context = {
+        'items': items,
+        'total_price': total_price
+    }
+    return render(request, 'baseapp/cart.html', context)
+
+
+def product_detail(request, pk):
+    # Retrieve the specific product based on the primary key (pk)
+    product = get_object_or_404(Accessories, pk=pk)
+
+    # You can add any additional logic or data processing here if needed
+
+    return render(request, 'baseapp/product_detail.html', {'product': product})
