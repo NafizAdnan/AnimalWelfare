@@ -38,6 +38,7 @@ urlpatterns = [
      # path('animal', views.animal, name='animal'),
      # path('search', views.search, name='search'),
      path('user/<str:username>/upload-history', views.uploadHistory, name='upload_history'),
+     path('user/<str:username>/order-history', views.order_history, name='order_history'),
      path('admin-dashboard', views.adminDashboard, name='admin_dashboard'),
      path('user-dashboard', views.userDashboard, name='user_dashboard'),
      path('manage_animals', views.manageAnimals, name='manage_animals'),
@@ -57,5 +58,12 @@ urlpatterns = [
     path('cart/adjust/<int:item_id>/<str:action>/', views.adjust_cart_item, name='adjust_cart_item'),
     path('cart/', views.cart_view, name='cart'),
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
+    path('place_order/', views.place_order, name='place_order'),
+    path('order_status/<str:order_id>/', views.order_status, name='order_status'),
+    path('create_stripe_session/<order_id>/', views.create_stripe_session, name='create_stripe_session'),
+    path('payment_success/<order_id>/', views.payment_success, name='payment_success'),
+    path('payment_cancel/<order_id>/', views.payment_cancel, name='payment_cancel'),
+    path('webhooks/stripe/', views.stripe_webhook, name='stripe_webhook'),
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,3 +1,4 @@
+import stripe
 from django.contrib.messages.storage import session
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -9,6 +10,8 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.csrf import csrf_exempt
+
 from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
@@ -576,3 +579,137 @@ def product_detail(request, pk):
     # You can add any additional logic or data processing here if needed
 
     return render(request, 'baseapp/product_detail.html', {'product': product})
+
+
+def place_order(request):
+    if request.method == 'POST':
+        # Create a new order with form data
+        new_order = Order()
+        new_order.order_id = generate_random_identifier()  # Generate a random Order ID
+        new_order.user = request.user
+        print(request.POST.get('name'), '########################################################3')
+        cart_items = CartItem.objects.filter(cart__user=request.user)
+        new_order.items_summary = "\n".join(
+            f"{item.quantity}x {item.accessory.title} - ${item.total_price}" for item in cart_items)
+        new_order.total_cost = sum(item.total_price for item in cart_items)
+        print(request.POST.get('name'), '########################################################3')
+        new_order.name = request.POST.get('name')
+        new_order.email = request.POST.get('email')
+        new_order.phone = request.POST.get('phone')
+        new_order.city = request.POST.get('city')
+        new_order.state = request.POST.get('state')
+        new_order.address = request.POST.get('address')
+        new_order.payment_status = False  # Payment status is initially False
+        new_order.save()
+
+        # Clear the user's cart
+        CartItem.objects.filter(cart__user=request.user).delete()
+
+        # Redirect to a new URL for order confirmation
+        return redirect('baseapp:order_status', order_id=new_order.id)
+        #return redirect('order_confirmation', order_id=new_order.order_id)
+    else:
+        # If the request is GET, display the cart items and total price
+        cart_items = CartItem.objects.filter(cart__user=request.user)
+        total_price = sum(item.total_price for item in cart_items)
+
+        return render(request, 'baseapp/place_order.html', {'cart_items': cart_items, 'total_price': total_price})
+
+
+
+def order_history(request, username):
+    orders = Order.objects.filter(user__username=username)  # Ensure you're filtering by the related user's username
+    return render(request, 'baseapp/order_history.html', {'orders': orders})
+
+def order_status(request, order_id):
+    # Retrieve the order using the order_id
+    order = get_object_or_404(Order, id=order_id)
+    # Pass the order to the template
+    return render(request, 'baseapp/order_status.html', {'order': order})
+    
+
+#STRIPE
+# views.py
+def payment_success(request, order_id):
+    # Logic to handle successful payment
+    order = get_object_or_404(Order, id=order_id)
+    if not order.payment_status:
+        order.payment_status=True
+        order.save()
+    # You can retrieve the session ID with request.GET.get('session_id')
+    return render(request, 'baseapp/success.html')
+
+def payment_cancel(request, order_id):
+    # Logic to handle payment cancellation
+    return render(request, 'baseapp/cancel.html')
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+def create_stripe_session(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if not order.payment_status:
+        # Split the items_summary by line breaks to process each item
+        items = order.items_summary.split('\n')
+        line_items = []
+        for item in items:
+            # Assuming each item follows the format "quantity x title - $total_price"
+            parts = item.split(' - $')
+            quantity, title = parts[0].split('x')
+            total_price = parts[1]
+            line_items.append({
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': title.strip(),
+                        'description': item
+                    },
+                    'unit_amount': int(float(total_price) * 100),
+                },
+                'quantity': int(quantity.strip()),
+            })
+
+        # Create a Stripe Checkout Session
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            client_reference_id=order.id,
+            success_url=request.build_absolute_uri(reverse('baseapp:payment_success', args=[order.id])),
+            cancel_url=request.build_absolute_uri(reverse('baseapp:payment_cancel', args=[order.id])),
+        )
+        return redirect(session.url, code=303)
+    else:
+        print('NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+        print('**********************************************')
+        return redirect('baseapp:order_status', order_id=order.id)
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = 'your-endpoint-secret'  # Replace with your endpoint's secret
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the checkout.session.completed event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+
+        # Retrieve the order using the session ID
+        order_id = session.get('client_reference_id')
+        order = Order.objects.get(id=order_id)
+
+        # Update the order's payment status
+        order.payment_status = True
+        order.save()
+
+    return HttpResponse(status=200)
