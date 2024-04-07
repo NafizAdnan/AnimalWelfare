@@ -115,6 +115,32 @@
     {% endfor %}
 </section>
 
+
+<!-- Order Status Button HTML
+<a href="{ % url 'baseapp:order_status' order_id=order.order_id %}" class="order-status-btn">Check Order Status</a>
+-->
+
+
+<style>
+
+/* Order Status Button CSS */
+.order-status-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.order-status-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+</style>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

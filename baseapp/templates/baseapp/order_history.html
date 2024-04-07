@@ -1,0 +1,83 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  .order-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 25px; /* Increased vertical gaps */
+    margin-bottom: 20px;
+  }
+  .order-table th, .order-table td {
+    border: none;
+    padding: 15px;
+    text-align: left;
+    font-size: 1.2em; /* Increased font size */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtle shadow effect */
+  }
+  .order-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.3em; /* Slightly larger font size for headers */
+  }
+  .payment-status-paid {
+    color: #28a745; /* Green color for paid status */
+    font-weight: bold; /* Highlighting the payment status */
+  }
+  .payment-status-not-paid {
+    color: #dc3545; /* Red color for not paid status */
+    font-weight: bold; /* Highlighting the payment status */
+  }
+  h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .order-summary {
+    font-size: 0.9em; /* Smaller font size for summary */
+  }
+  .order-summary strong {
+    font-weight: bold; /* Make the label bold */
+  }
+</style>
+
+<h2>Order History</h2>
+<table class="order-table">
+  <tr>
+    <th>Order ID</th>
+    <th>User</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>City</th>
+    <th>State</th>
+    <th>Address</th>
+    <th>Payment Status</th>
+    <th>Items Ordered</th>
+    <th>Total Amount</th>
+  </tr>
+  {% for order in orders %}
+  <tr>
+    <td>{{ order.id }}</td>
+    <td>{{ order.user.username }}</td>
+    <td>{{ order.name }}</td>
+    <td>{{ order.email }}</td>
+    <td>{{ order.phone }}</td>
+    <td>{{ order.city }}</td>
+    <td>{{ order.state }}</td>
+    <td>{{ order.address }}</td>
+    <td class="{{ order.payment_status|yesno:'payment-status-paid,payment-status-not-paid' }}">{{ order.payment_status|yesno:"Paid,Not Paid" }}</td>
+    <td class="order-summary"><strong>Items:</strong> <br>{{ order.items_summary }}</td>
+    <td class="order-summary"><strong>Total:</strong> ${{ order.total_cost }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

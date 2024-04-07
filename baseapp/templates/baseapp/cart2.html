@@ -111,43 +111,6 @@
     display: inline-block;
     margin-bottom: 2rem;
 }
-
-.cart-item-quantity-price {
-    text-align: left;
-}
-
-.price {
-    font-size: 0.875rem; /* Adjust the size as needed */
-}
-
-.quantity {
-    font-size: 0.9rem; /* Adjust the size as needed */
-    font-weight: bold;
-}
-
-/* If you're using Bootstrap, you can replace the above CSS with Bootstrap utility classes */
-
-/* Place Order Button CSS */
-.place-order-btn {
-    padding: 10px 20px;
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.place-order-btn:hover {
-    background-color: #45a049; /* Darker green background on hover */
-    transform: translateY(-2px); /* Slight lift on hover */
-}
-
-.place-order-btn:active {
-    transform: translateY(1px); /* Depress the button when clicked */
-}
-
 </style>
 
 <a href="{% url 'baseapp:products_for_sale' %}" class="bg-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded continue-shopping">Continue Shopping</a>
@@ -164,10 +127,7 @@
                     <img src="{{ item.accessory.picture.url }}" alt="{{ item.accessory.title }}">
                     <div class="cart-details">
                         <p class="text-lg">{{ item.accessory.title }}</p>
-                        <div class="cart-item-quantity-price text-sm mb-2">
-                            <div class="price">Price: ${{ item.accessory.price }} each</div>
-                            <div class="quantity">Quantity: <strong>{{ item.quantity }}</strong></div>
-                        </div>
+                        <p class="text-sm">(Qty: {{ item.quantity }} at ${{ item.accessory.price }} each)</p>
                     </div>
                     <div class="cart-actions">
                         <a href="{% url 'baseapp:adjust_cart_item' item.id 'subtract' %}">
@@ -194,14 +154,9 @@
             <p>Total Price:</p>
             <p>${{ total_price }}</p>
         </div>
-
-    <!-- Place Order Button HTML -->
-        <button class="place-order-btn" onclick="location.href='{% url 'baseapp:place_order' %}'">Place Order</button>
-
     {% else %}
         <p>Your cart is empty.</p>
     {% endif %}
 </div>
-
 
 {% endblock %}

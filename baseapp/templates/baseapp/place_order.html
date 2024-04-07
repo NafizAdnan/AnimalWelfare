@@ -1,0 +1,82 @@
+{% extends 'main.html' %}
+
+{% block title %}Place Your Order{% endblock %}
+
+{% block content %}
+<!-- Main container -->
+<div class="container mx-auto mt-10">
+    <!-- Order Summary Section -->
+    <div class="flex shadow-md my-10">
+        <div class="w-3/4 bg-white px-10 py-10">
+            <h1 class="text-3xl font-bold text-center mb-8">Your Order Summary</h1>
+            <div class="flex justify-between border-b-2 border-gray-200 pb-8">
+                <h2 class="font-semibold text-xl">Product Details</h2>
+                <h2 class="font-semibold text-xl">Subtotal</h2>
+            </div>
+            <!-- Items List -->
+            {% for item in items %}
+            <div class="flex justify-between items-center border-b border-gray-200 py-6">
+                <div class="flex items-center">
+                    <img class="h-24 w-24 object-cover rounded" src="{{ item.accessory.picture.url }}" alt="{{ item.accessory.title }}">
+                    <div class="ml-6">
+                        <span class="font-bold text-lg">{{ item.accessory.title }}</span>
+                        <span class="block text-gray-700 text-sm">{{ item.accessory.description }}</span>
+                    </div>
+                </div>
+                <span class="font-semibold text-lg">${{ item.total_price }}</span>
+            </div>
+            {% endfor %}
+            <!-- Total Price -->
+            <div class="flex justify-between items-center border-t-2 border-gray-200 pt-8 mt-8">
+                <span class="text-2xl font-bold">Grand Total</span>
+                <span class="text-2xl font-bold">${{ total_price }}</span>
+            </div>
+        </div>
+        <!-- User Details Form Section -->
+        <div class="w-1/4 bg-gray-200 px-8 py-10">
+            <h1 class="text-2xl font-bold text-center mb-8">Shipping Information</h1>
+            <form action="{% url 'baseapp:place_order' %}" method="POST">
+                {% csrf_token %}
+                <!-- Form fields -->
+                <div class="col-span-6 sm:col-span-3">
+                    <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="name" name="name"
+                      class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+                </div>
+                <!-- Email Field -->
+                <div class="mb-4">
+                    <label class="block text-gray-800 text-sm font-bold mb-2" for="email">Email</label>
+                    <input name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="Enter your email" required>
+                </div>
+                <!-- Phone Field -->
+                <div class="mb-4">
+                    <label class="block text-gray-800 text-sm font-bold mb-2" for="phone">Phone</label>
+                    <input name="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="phone" type="tel" placeholder="Enter your phone number" required>
+                </div>
+                <!-- City Field -->
+                <div class="mb-4">
+                    <label class="block text-gray-800 text-sm font-bold mb-2" for="city">City</label>
+                    <input name="city" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="city" type="text" placeholder="Enter your city" required>
+                </div>
+                <!-- State Field -->
+                <div class="mb-4">
+                    <label class="block text-gray-800 text-sm font-bold mb-2" for="state">State</label>
+                    <input name="state" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="state" type="text" placeholder="Enter your state" required>
+                </div>
+                <!-- Address Field -->
+                <div class="mb-4">
+                    <label class="block text-gray-800 text-sm font-bold mb-2" for="address">Address</label>
+                    <textarea name="address" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="address" placeholder="Enter your address" required></textarea>
+                </div>
+                <!-- Confirm Order Button -->
+                <div class="flex items-center justify-center mt-10">
+                    <button class="bg-orange-200 hover:bg-orange-300 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline transition-colors duration-300" type="submit">
+                        Confirm Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

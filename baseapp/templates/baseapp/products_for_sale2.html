@@ -1,0 +1,224 @@
+{% extends 'main.html' %}
+
+{% block title %}On Sale{% endblock title %}
+
+
+{% block content %}
+{% load static %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+
+
+
+<div class="text-center p-10">
+    <h1 class="font-bold text-4xl mb-4">Petcare Products:</h1>
+    <p class="text-xl"></p>
+</div>
+
+
+
+<form class="d-flex" role="search" method="GET">
+    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
+    <input class="form-control me-2" type="number" placeholder="Min Price" aria-label="Min Price" name="min_price">
+    <input class="form-control me-2" type="number" placeholder="Max Price" aria-label="Max Price" name="max_price">
+
+    <button type="button" class="nav-link scrollto bg-danger p-3 m-2 text-white" id="popcart" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" ><i class="fa-solid fa-cart-shopping"></i>  Cart (<span id="cart">0</span>)
+    </button>
+
+
+    <select name="category">
+        <option value="">Accessories Type</option>
+        <option value="Food">Food</option>
+        <option value="Toy">Toy</option>
+        <option value="Tools">Tools</option>
+    </select>
+    <button class="btn btn-outline-success" type="submit">Search</button>
+</form>
+
+
+
+
+<!-- Sorting Options -->
+<div class="dropdown">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Sort by Price
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" href="?sort_by=price_low_to_high{% if query %}&q={{ query }}{% endif %}">Low to High</a>
+    <a class="dropdown-item" href="?sort_by=price_high_to_low{% if query %}&q={{ query }}{% endif %}">High to Low</a>
+  </div>
+</div>
+
+
+
+
+<br>
+<!-- Grid Section -->
+<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mt-10 mb-5">
+
+    {% for product in products %}
+    <!-- Product Card -->
+        <div class="w-72 bg-white shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
+        <a href="">
+            {% if product.picture %}
+            <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% else %}
+            <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% endif %}
+            <div class="px-4 py-3">
+                <h3 class="text-lg font-bold text-black truncate capitalize">{{ product.title }}</h3>
+                <p class="text-gray-600 text-sm my-1">{{ product.description|truncatewords:15 }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-semibold text-black">${{ product.price }}</span>
+                    <span class="text-gray-500 text-xs">{{ product.stock }} in stock</span>
+                </div>
+                    <span id="divpr{{i.id}}" class="divpr">
+                        <button id="pr{{product.id}}" class="btn btn-danger cart btn-sm mt-0">
+                            AddToCart <i class="fa-solid fa-cart-shopping"></i>
+                        </button>
+                    </span>
+
+
+            </div>
+        </a>
+    </div>
+
+    <!-- End Product Card -->
+    {% empty %}
+    <!-- <div>No accessories found.</div> -->
+    {% endfor %}
+
+</section>
+
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+
+
+<script>
+
+  //find pout the card from local storage
+
+  if (localStorage.getItem('cart') == null) {
+      var cart = {};
+  } else {
+      cart = JSON.parse(localStorage.getItem('cart'));
+      updateCart(cart);
+
+  }
+  // add or increment code
+
+  // $('.cart').click(function() {
+  $('.divpr').on('click', 'button.cart', function() {
+      var idstr = this.id.toString();
+      console.log(idstr)
+
+      if (cart[idstr] != undefined) {
+          qty = cart[idstr][0] + 1;
+
+      } else {
+          qty = 1;
+          name = document.getElementById('name' + idstr).innerHTML;
+          price = document.getElementById('price' + idstr).innerHTML;
+          cart[idstr] = [qty, name, price];
+
+      }
+      updateCart(cart);
+
+      localStorage.setItem('cart', JSON.stringify(cart));
+      document.getElementById('cart').innerHTML = Object.keys(cart).length;
+      console.log( Object.keys(cart).length)
+      document.getElementById("popcart").click();
+  });
+  // add pop over to cart
+
+  $('#popcart').popover();
+
+  updatePopover(cart);
+  function updatePopover(cart) {
+
+
+      console.log('we are  inside update popover');
+
+      var popStr = "";
+      var popStr = popStr + "<h5> cart for your items in my shopping cart </h5> <div class='mx-2 my-2'>";
+      var i = 1;
+      for (var item in cart) {
+          popStr = popStr + "<b>" + i + "</b>. ";
+          popStr = popStr + document.getElementById('name' + item).innerHTML.slice(0, 19) + "..." + "<b>" +cart[item][0] + "</b>"+ "Qty"  + '<br>';
+          i = i + 1;
+      }
+
+      popStr = popStr + "</div> <a href='/checkout'><button class='btn btn-success' id='clearCart'>Checkout</button></a>  <button class='btn btn-dark' onclick='clearCart()' id='clearCart'>ClearCart</button>"
+      document.getElementById('popcart').setAttribute('data-content', popStr);
+      $('#popcart').popover('show');
+      document.getElementById("popcart").click();
+  }
+
+  function clearCart() {
+      cart = JSON.parse(localStorage.getItem('cart'));
+      for (var item in cart) {
+          document.getElementById('div' + item).innerHTML = '<button id="' + item + '" class="btn btn-danger cart">AddtoCard <i class="fa-solid fa-cart-shopping"></i></button>'
+      }
+      localStorage.clear();
+      cart = {};
+      updateCart(cart);
+
+     let clear= document.getElementById("popcart").click();
+     document.getElementById("popcart").click();
+
+  }
+
+  function updateCart(cart) {
+      var sum = 0;
+      for (var item in cart) {
+          sum = sum + cart[item][0];
+          document.getElementById('div' + item).innerHTML = "<button id='minus" + item + "'class='btn btn-success minus'>-</button> <span id='val" + item + "''>" + cart[item][0] + "</span> <button id='plus" + item + "' class='btn btn-success plus'> + </button>";
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      document.getElementById('cart').innerHTML = sum;
+      console.log(cart);
+      updatePopover(cart);
+      document.getElementById("popcart").click();
+  }
+
+  //if plus or minus button is clicked change the cart as well as the display value
+  $('.divpr').on("click", "button.minus", function() {
+
+      a = this.id.slice(7, );
+      cart['pr' + a][0] = cart['pr' + a][0] - 1;
+      cart['pr' + a][0] = Math.max(0, cart['pr' + a][0]);
+      document.getElementById('valpr' + a).innerHTML = cart['pr' + a][0];
+      updateCart(cart);
+
+
+  })
+
+
+  $('.divpr').on("click", "button.plus", function() {
+
+      a = this.id.slice(6, );
+      cart['pr' + a][0] = cart['pr' + a][0] + 1;
+
+      document.getElementById('valpr' + a).innerHTML = cart['pr' + a][0];
+      updateCart(cart);
+
+
+  })
+</script>
+
+
+
+
+
+
+
+
+{% endblock content %}
+
+
+
+
