@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdde97;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        textarea {
+            width: 500px;
+            height: 300px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        input[type="text"] {
+            width: 500px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="button"] {
+            padding: 10px 20px;
+            background-color: #000205;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="button"]:hover {
+            background-color: #000102;
+        }
+        .btn {
+        display: inline-block;
+        text-decoration: none;
+        color: #ffffff;
+        background-color: #000306;
+        padding: 8px 15px;
+        border-radius: 5px;
+        margin: 5px;
+       }
+
+        .btn:hover {
+            background-color: #000204;
+        }
+
+    </style>
+</head>
+<body>
+    <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br>
+    <input type="hidden" id="username-input" type="text" size="100" placeholder="Username"><br>
+    <input id="chat-message-input" type="text" size="100" placeholder="Enter you message"><br>
+    <div>
+        <input id="chat-message-submit" type="button" value="SEND">
+        <a href="{% url 'baseapp:user_dashboard' %}" class="btn">BACK</a>
+    </div>
+
+    {{ room_name|json_script:"room-name" }}
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.username + ': ' + data.message + '\n'); // Display username with message
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const usernameInputDom = document.querySelector('#username-input');
+            const username = usernameInputDom.value; // Get the entered username
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'username': username, // Send the username along with the message
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
+</body>
+</html>

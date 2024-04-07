@@ -66,6 +66,7 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    friends = models.ManyToManyField("User",blank=True)
 
     def calculate_age(self):
         if not self.dob:
@@ -121,11 +122,9 @@ class Animal(models.Model):
                              validators=[FileExtensionValidator(allowed_extensions=['MOV', 'avi', 'mp4', 'webm', 'mkv'])])
     vaccinated = models.BooleanField(default=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # user_identifier = models.CharField(max_length=100, null=True, blank=True)
     available_for = models.CharField(max_length=20, default='adoption')
     date_uploaded = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
-    #adopted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,related_name='adopted_animals')
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -170,3 +169,4 @@ class Accessories(models.Model):
 class Support(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
+

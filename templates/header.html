@@ -28,7 +28,7 @@
             overflow: visible !important;
         }
         .notification {
-            background-color: #0d6efd;
+            background-color: #fdde97;
             color: white;
             text-decoration: none;
             padding: 4px 24px;
@@ -91,24 +91,15 @@
               href="{% url 'baseapp:add_animal' %}"
               ><span class="uil uil-bill"></span
               ><span class="ms-1 fs-10 fs-sm-9">Add Animal</span></a>
-              <!-- <a class="ms-2 ms-md-3 submenu" href="#!"
-              ><a href="#" class="notification">
-              <span>Notification</span>
-              <span class="badge">3</span>
-              
-            </a> -->
+
             <li class="nav-item dropdown notification-section">
               <a href="#" class="notification dropdown-toggle" id="navbarDropdown" role="button"
                   data-bs-toggle="dropdown" aria-expanded="true">
                   <span><i class='fa fa-bell'></i></span>
-                  <span class="badge" id="notification-badge">0</span>
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown" id="notifications-dropdown"
                   data-popper-placement="bottom-end"
                   style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(-70px, 42px, 0px);">
-                  
-                  <!-- <li class="dropdown-item">Hello</li>
-                  <hr class="dropdown-divider"> -->
 
                   {% for i in notifications %}
                   <li class="dropdown-item">{{i.message}}</li>
@@ -121,11 +112,6 @@
           </li>
 
 
-
-            <!-- <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:signout' %}"
-              ><span class="uil uil-user-circle"></span
-              ><span class="ms-1 fs-10 fs-sm-9">Logout</span></a
-            > -->
             <div class="dropdown">
                 <a href="#" class="ms-2 ms-md-3 submenu dropdown-toggle" id="navbarDropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                   <span class="uil uil-user-circle"></span><span class="ms-1 fs-10 fs-sm-9">Account</span>
@@ -240,7 +226,7 @@
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
-                        href="{% url 'baseapp:supports' %}"
+                        href=""
                         title="support"
                         >Support</a
                       >
@@ -268,7 +254,6 @@
                   console.log(data);
                   document.getElementById("notifications-dropdown").innerHTML = "<li class='dropdown-item'>" + data + "</li><hr class='dropdown-divider'>"+ document.getElementById("notifications-dropdown").innerHTML;
                   document.getElementById("notification-badge").innerHTML = parseInt(document.getElementById("notification-badge").innerHTML) + 1;
-                  //document.querySelector('#chat-log').value += (data.message + '\n');
               };
       
               NotificationSocket.onclose = function(e) {

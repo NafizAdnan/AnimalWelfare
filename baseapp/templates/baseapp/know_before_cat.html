@@ -1,31 +1,133 @@
-<!-- know_before.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Know Before</title>
+    <title>Know Before Adopting a Cat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdde97;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #000103;
+            margin-top: 20px;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #000305;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #000307;
+        }
+        button[type="button"] {
+            padding: 10px 20px;
+            background-color: #000305;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="button"]:hover {
+            background-color: #000307;
+        }
+
+
+        .info-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #000103;
+            margin-bottom: 10px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        p {
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            color: #ff0000;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .button-container button {
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Know Before</h1>
+    <h1>Know Before Adopting a Cat</h1>
     
     <!-- Form to input cat name -->
     <form method="post">
         {% csrf_token %}
-        <label for="cat_name">Enter Cat Name:</label>
+        <label for="cat_name">Enter Cat's Breed:</label>
         <input type="text" id="cat_name" name="cat_name" required>
-        <button type="submit">Submit</button>
+        <div class="button-container">
+            <button type="submit">SUBMIT</button>
+            <a href="{% url 'baseapp:user_dashboard' %}">
+                <button type="button">BACK</button>
+            </a>
+        </div>
     </form>
 
     <!-- Display cat information -->
     {% if api_response %}
-        <div>
+        <div class="info-container">
             <h2>{{ api_response.0.name }} Information</h2>
             
             <div>
                 <h3>Image</h3>
-                <img src="{{ api_response.0.image_link }}" alt="{{ api_response.0.name }} Image" style="max-width: 300px;">
+                <img src="{{ api_response.0.image_link }}" alt="{{ api_response.0.name }} Image">
             </div>
             
             <div>
@@ -47,10 +149,10 @@
             </div>
         </div>
     {% endif %}
-
+    
     <!-- Display error message if any -->
     {% if error_message %}
-        <p>{{ error_message }}</p>
+        <p class="error-message">{{ error_message }}</p>
     {% endif %}
 </body>
 </html>

@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
 from django.contrib.sites.shortcuts import get_current_site
-# from django.contrib.auth.models import User
 from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
@@ -13,7 +12,6 @@ from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
 from django.conf import settings
-# from django.views.generic import ListView, DetailView,CreateView,UpdateView,DeleteView
 from .models import *
 from django.urls import reverse_lazy
 from pprint import pprint
@@ -22,6 +20,7 @@ from .utils import *
 import os
 from shutil import copyfile, move
 from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync   
 # Create your views here.
 
 def home(request):
@@ -38,13 +37,6 @@ def signup(request):
     
     if request.method == "POST":
         print(request.POST)
-        # username = request.POST['username']
-        # fname = request.POST['fname']
-        # lname = request.POST['lname']
-        # email = request.POST['email']
-        # pass1 = request.POST['pass1']
-        # pass2 = request.POST['pass2']
-        # contact = request.POST['contact']
         username = request.POST.get('username')
         fname = request.POST.get('fname')
         lname = request.POST.get('lname')
@@ -334,9 +326,6 @@ def animalList(request):
     animals = Animal.objects.all()
     return render(request, 'baseapp/animal_list.html', {'animals':animals})
 
-def animalDetail(request, id):
-    animal = Animal.objects.get(id=id)
-    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
 @login_required(login_url='signin')
 def userProfile(request, username):
@@ -355,7 +344,7 @@ def is_admin(user):
 @login_required(login_url='signin')
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def adminDashboard(request):
-    return render(request, 'baseapp/admin_dashboard.html')
+    return render(request, 'baseapp/admin_dashboard.html',{'room_name':"broadcast"})
 
 @login_required(login_url='signin')
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
@@ -466,22 +455,34 @@ def productsForSale(request):
     products = Accessories.objects.all
     return render(request, 'baseapp/products_for_sale.html', {'products':products})
 
+@login_required(login_url='signin')
+def animal_detail(request, id):
+    if request.user.is_authenticated:  # Check if user is authenticated
+        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
+            print("User ID:", request.user.id)
+        else:
+            print("User has no 'id' attribute")
+    else:
+        print("User is not authenticated")
+
+    animal = get_object_or_404(Animal, id=id)
+
+    return render(request, 'baseapp/animal_detail.html', {'animal': animal,'user': request.user})
 
 @login_required(login_url='signin')
-def supports(request):
-    supports = Support.objects.all()
-    return render(request,'baseapp/supports.html', {'supports':supports})
+def animal_detail_2(request, id):
+    if request.user.is_authenticated:  # Check if user is authenticated
+        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
+            print("User ID:", request.user.id)
+        else:
+            print("User has no 'id' attribute")
+    else:
+        print("User is not authenticated")
 
-@login_required(login_url='signin')
-def support(request,slug):
-    support = Support.objects.get(slug=slug)
-    return render(request,'baseapp/support.html', {'support':support})
+    animal = get_object_or_404(Animal, id=id)
 
-@login_required(login_url='signin')
-def animal_detail(request, pk):
-    animal = get_object_or_404(Animal, pk=pk)
+    return render(request, 'baseapp/animal_detail_2.html', {'animal': animal,'user': request.user})
 
-    return render(request, 'baseapp/animal_detail.html', {'animal': animal})
 
 @login_required(login_url='signin')
 def request_adoption(request, id):
@@ -514,22 +515,6 @@ def manage_adopt(request):
     animals = Animal.objects.all()
     pending = animals.filter(approved=False)
     return render(request, 'baseapp/manage_adopt.html', {'pending':pending})
-
-# @login_required(login_url='signin')
-# @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
-# def approve_adopt(request,pk):
-#     animals = Animal.objects.filter(approved=True)
-#     animals.save()
-#     print(animals)
-#     messages.success(request, f"{animals.title} has been approved for adoption.")
-#     return render(request, 'baseapp/approve_adopt.html', {'animals':animals})
-
-#@login_required(login_url='signin')
-#def adoptionHistory(request, username):
-#    user = User.objects.get(username=username)
-#    animals = Animal.objects.filter(adopted_by=user)
-#   return render(request, 'baseapp/adoption_history.html', {'animals':animals})
-
 
 
 from django.shortcuts import render
@@ -598,19 +583,4 @@ def know_before_dog(request):
             # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_dog.html')
 
-from asgiref.sync import async_to_sync    
-# @login_required(login_url='signin')
-# def test(request):
-#     channel_layer = get_channel_layer()
-#     async_to_sync(channel_layer.group_send)(
-#         "notification_broadcast",
-#         {
-#             'type': 'send_notification',
-#             'message': "Notification"
-#         }
-#     )
-#     return HttpResponse("Done")
-# from .tasks import test_func
-# def test(request):
-#     test_func.delay()
-#     return HttpResponse("Done")
+ 

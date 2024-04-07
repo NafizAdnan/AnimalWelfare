@@ -6,5 +6,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     ## path('', include('baseapp.urls')),
     path('', include(('baseapp.urls', 'baseapp'), namespace='baseapp')),
-    #path('',views.test,name="test" ),
+    path("chat/", include("chat.urls")),
+    
+
+    
 ]

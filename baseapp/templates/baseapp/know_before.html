@@ -1,24 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Know Before</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Know Before</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #fdde97;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+}
+
+.btn {
+    display: inline-block;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #000306;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin: 10px;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.dog-link {
+    margin-top: 20px;
+}
+
+    </style>
 </head>
 <body>
-   <h1>Know Before Adoption</h1>
-   <a href="{% url 'baseapp:know_before_cat' %}" class="text-white hover:underline font-bold text-xl md:text-2xl lg:text-3xl bg-transparent p-5 rounded">
-       CAT
-   </a>
-   <div> <!-- Wrap DOG link in a div -->
-       <a href="{% url 'baseapp:know_before_dog' %}" class="text-white hover:underline font-bold text-xl md:text-2xl lg:text-3xl bg-transparent p-5 rounded">
-           DOG
-       </a>
-   </div>
-
-
-  
-  
+    <h1>Know Before Adoption</h1>
+    <a href="{% url 'baseapp:know_before_cat' %}" class="btn">CAT</a>
+    <div class="dog-link">
+        <a href="{% url 'baseapp:know_before_dog' %}" class="btn">DOG</a>
+    </div>
+    <div class="dog-link">
+    <a href="{% url 'baseapp:user_dashboard' %}" class="btn">BACK</a>
+    </div>
+</body>
 </html>
-
-

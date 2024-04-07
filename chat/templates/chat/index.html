@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Rooms</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdde97;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input[type="button"] {
+            padding: 10px 20px;
+            background-color: #000001;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="button"]:hover {
+            background-color: #000205;
+        }
+        .btn {
+        display: inline-block;
+        text-decoration: none;
+        color: #ffffff;
+        background-color: #000306;
+        padding: 10px 20px;
+        border-radius: 5px;
+        margin: 10px;
+    }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+
+    </style>
+</head>
+<body>
+    <label for="room-name-input">What chat room would you like to enter?</label><br>
+    <input id="room-name-input" type="text" size="100"><br>
+    <div>
+        <input id="room-name-submit" type="button" value="Enter">
+        <a href="{% url 'baseapp:user_dashboard' %}" class="btn">BACK</a>
+
+    </div>
+
+    <script>
+        document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#room-name-submit').click();
+            }
+        };
+
+        document.querySelector('#room-name-submit').onclick = function(e) {
+            var roomName = document.querySelector('#room-name-input').value;
+            window.location.pathname = '/chat/' + roomName + '/';
+        };
+    </script>
+</body>
+</html>

@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'notification_app',
     'django_celery_results',
     'django_celery_beat',
+    'chat',
+    
+
 ]
 
 MIDDLEWARE = [
