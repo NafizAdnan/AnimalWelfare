@@ -1,75 +1,274 @@
-{% load static %}
 <!DOCTYPE html>
-<html data-bs-theme="light" lang="en-US" dir="ltr">
-
+{% load static %}
+<html>
 <head>
+	<title>Ecom</title>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1" />
 
-    <!-- ===============================================-->
-    <!--    Document Title-->
-    <!-- ===============================================-->
-    <title>{% block title %} Animal Welfare {% endblock title %}</title>
-
-    <!-- ===============================================-->
-    <!--    Favicons-->
-    <!-- ===============================================-->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicons/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicons/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicons/favicon-16x16.png' %}">
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicons/favicon.ico' %}">
-    <link rel="manifest" href="{% static 'img/favicons/manifest.json' %}">
-    <meta name="msapplication-TileImage" content="{% static 'img/favicons/mstile-150x150.png' %}">
-    <meta name="theme-color" content="#ffffff">
-    <script src="{% static 'js/config.js' %}"></script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
 
-    <!-- ===============================================-->
-    <!--    Stylesheets-->
-    <!-- ===============================================-->
-    <link rel="stylesheet" href="{% static 'vendors/swiper/swiper-bundle.min.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com' %}" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&amp;display=swap"
-        rel="stylesheet">
-    <link href="{% static 'css/theme.css' %}" rel="stylesheet" id="style-default">
-    <link href="{% static 'css/user-rtl.css' %}" rel="stylesheet" id="user-style-rtl">
-    <link href="{% static 'css/user.css' %}" rel="stylesheet" id="user-style-default">
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body{
+            background-color: hsl(0, 0%, 98%);
+        }
 
-    {% block extra_css %}    {% endblock extra_css %}
+        h1,h2,h3,h4,h5,h6{
+            color:hsl(0, 0%, 30%);
+        }
+
+        .box-element{
+            box-shadow:hsl(0, 0%, 80%) 0 0 16px;
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .thumbnail{
+            width: 100%;
+            height: 200px;
+            -webkit-box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
+            -moz-box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
+            box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
+        }
+
+        .product{
+            border-radius: 0 0 4px 4px;
+        }
+
+        .bg-dark{
+            background-color: #4f868c!important;
+        }
+
+        #cart-icon{
+            width:25px;
+            display: inline-block;
+            margin-left: 15px;
+        }
+
+        #cart-total{
+            display: block;
+            text-align: center;
+            color:#fff;
+            background-color: red;
+            width: 20px;
+            height: 25px;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+
+        .col-lg-4, .col-lg-6, .col-lg-8, .col-lg-12{
+            margin-top: 10px;
+        }
+
+        .btn{
+            border-radius: 0;
+        }
+
+        .row-image{
+            width: 100px;
+        }
+
+        .form-field{
+            width:250px;
+            display: inline-block;
+            padding: 5px;
+        }
+
+        .cart-row{
+            display: flex;
+            align-items: flex-stretch;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ececec;
+
+        }
+
+        .quantity{
+            display: inline-block;
+            font-weight: 700;
+            padding-right:10px;
+
+
+        }
+
+        .chg-quantity{
+            width: 12px;
+            cursor: pointer;
+            display: block;
+            margin-top: 5px;
+            transition:.1s;
+        }
+
+        .chg-quantity:hover{
+            opacity: .6;
+        }
+
+
+        .hidden{
+            display: none!important;
+        }
+
+    </style>
+
+	<script type="text/javascript">
+		var user = '{{request.user}}'
+
+		function getToken(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = cookies[i].trim();
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+		var csrftoken = getToken('csrftoken')
+
+		function getCookie(name) {
+		    // Split cookie string and get all individual name=value pairs in an array
+		    var cookieArr = document.cookie.split(";");
+
+		    // Loop through the array elements
+		    for(var i = 0; i < cookieArr.length; i++) {
+		        var cookiePair = cookieArr[i].split("=");
+
+		        /* Removing whitespace at the beginning of the cookie name
+		        and compare it with the given string */
+		        if(name == cookiePair[0].trim()) {
+		            // Decode the cookie value and return
+		            return decodeURIComponent(cookiePair[1]);
+		        }
+		    }
+
+		    // Return null if not found
+		    return null;
+		}
+		var cart = JSON.parse(getCookie('cart'))
+
+		if (cart == undefined){
+			cart = {}
+			console.log('Cart Created!', cart)
+			document.cookie ='cart=' + JSON.stringify(cart) + ";domain=;path=/"
+		}
+		console.log('Cart:', cart)
+	
+	</script>
 
 </head>
-
 <body>
 
-    {% include "header.html" %}
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	  <a class="navbar-brand" href="{% url 'store' %}">Ecom</a>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+	    <span class="navbar-toggler-icon"></span>
+	  </button>
 
-    {% include "message.html" %}
+	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+	    <ul class="navbar-nav mr-auto">
+	      <li class="nav-item active">
+	        <a class="nav-link" href="{% url 'baseapp' %}">Store <span class="sr-only">(current)</span></a>
+	      </li>
+	 
+	    </ul>
+	    <div class="form-inline my-2 my-lg-0">
+	     	<a href="#"class="btn btn-warning">Login</a>
+	     	
+	     	<a href="{% url 'cart' %}">
+	    		<img  id="cart-icon" src="{% static 'images/cart.png' %}">
+	    	</a>
+	    	<p id="cart-total">{{cartItems}}</p>
 
-    {% block content %}
+	    </div>
+	  </div>
+	</nav>
 
-    {% endblock content %}
+     <div class="container">
+            <br>
+            {% block content %}
 
-    {% include "footer.html" %}
 
+            {% endblock content %}
+         </div>
+
+
+	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+	<script>
+        var updateBtns = document.getElementsByClassName('update-cart')
+
+        for (i = 0; i < updateBtns.length; i++) {
+            updateBtns[i].addEventListener('click', function(){
+                var productId = this.dataset.product
+                var action = this.dataset.action
+                console.log('productId:', productId, 'Action:', action)
+                console.log('USER:', user)
+
+                if (user == 'AnonymousUser'){
+                    addCookieItem(productId, action)
+                }else{
+                    updateUserOrder(productId, action)
+                }
+            })
+        }
+
+        function updateUserOrder(productId, action){
+            console.log('User is authenticated, sending data...')
+
+                var url = '/update_item/'
+
+                fetch(url, {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'X-CSRFToken':csrftoken,
+                    },
+                    body:JSON.stringify({'productId':productId, 'action':action})
+                })
+                .then((response) => {
+                   return response.json();
+                })
+                .then((data) => {
+                    location.reload()
+                });
+        }
+
+        function addCookieItem(productId, action){
+            console.log('User is not authenticated')
+
+            if (action == 'add'){
+                if (cart[productId] == undefined){
+                cart[productId] = {'quantity':1}
+
+                }else{
+                    cart[productId]['quantity'] += 1
+                }
+            }
+
+            if (action == 'remove'){
+                cart[productId]['quantity'] -= 1
+
+                if (cart[productId]['quantity'] <= 0){
+                    console.log('Item should be deleted')
+                    delete cart[productId];
+                }
+            }
+            console.log('CART:', cart)
+            document.cookie ='cart=' + JSON.stringify(cart) + ";domain=;path=/"
+
+            location.reload()
+        }
+    </script>
 </body>
-<!-- ===============================================-->
-<!--    JavaScripts-->
-<!-- ===============================================-->
-<script src="{% static 'vendors/popper/popper.min.js' %}"></script>
-<script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>
-<script src="{% static 'vendors/is/is.min.js' %}"></script>
-<script src="{% static 'vendors/countup/countUp.umd.js' %}"></script>
-<script src="{% static 'vendors/swiper/swiper-bundle.min.js' %}"></script>
-<script src="{% static 'vendors/lodash/lodash.min.js' %}"></script>
-<script src="https://polyfill.io/v3/polyfill.min.js?features=window.scroll"></script>
-<script src="{% static 'vendors/list.js/list.min.js' %}"></script>
-<script src="{% static 'js/theme.js' %}"></script>
-
-{% block extra_js %}    {% endblock extra_js %}
-
 </html>

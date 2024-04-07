@@ -1,0 +1,81 @@
+{% extends "main.html" %}
+{% block content %}
+<style>
+.header-text-color {
+    color: #333; /* Or any color you prefer */
+}
+</style>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<link href="update_profile.css" rel="stylesheet">
+<div class="container-xl px-4 mt-4">
+    <nav class="nav nav-borders">
+        <a class="nav-link active ms-0" href="#">Profile</a>
+        <a class="nav-link" href="#">Change Password</a>
+        <a class="nav-link" href="#">Security</a>
+        <a class="nav-link" href="#">Notifications</a>
+    </nav>
+    <hr class="mt-0 mb-4">
+    <div class="row">
+        <div class="col-xl-4">
+            <div class="card mb-4 mb-xl-0">
+                <div class="card-header header-text-color">Profile Picture</div>
+                <div class="card-body text-center">
+                    <img class="img-account-profile rounded-circle mb-2" src="" alt="">
+                    <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+                    <!-- Changed to input type=file for profile picture upload -->
+                    <input type="file" class="form-control" name="profile_picture" id="profile_picture">
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header header-text-color">Account Details</div>
+                <div class="card-body">
+                    <form action="{% url 'baseapp:update_profile' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="small mb-1 header-text-color" for="inputBio">Bio</label>
+                            <textarea class="form-control" id="inputBio" name="bio">{{ request.user.bio }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small mb-1 header-text-color" for="inputUsername">Username (cannot be changed)</label>
+                            <input class="form-control" id="username" type="text" value="{{ request.user.username }}" disabled>
+                        </div>
+                        <div class="row gx-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="small mb-1 header-text-color" for="inputFirstName">First name</label>
+                                <input class="form-control" id="fname" name="fname" type="text" value="{{ request.user.first_name }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small mb-1 header-text-color" for="inputLastName">Last name</label>
+                                <input class="form-control" id="lname" name="lname" type="text" value="{{ request.user.last_name }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small mb-1 header-text-color" for="inputEmailAddress">Email address</label>
+                            <input class="form-control" id="inputEmailAddress" name="email" type="email" value="{{ request.user.email }}">
+                        </div>
+                        <div class="row gx-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="small mb-1 header-text-color" for="inputPhone">Phone number</label>
+                                <input class="form-control" id="inputPhone" name="contact" type="tel" value="{{ request.user.contact }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small mb-1 header-text-color" for="inputBirthday">Birthday</label>
+                                <input class="form-control" id="inputBirthday" name="dob" type="date" value="{{ request.user.dob|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small mb-1 header-text-color" for="inputAddress">Address</label>
+                            <input class="form-control" id="inputAddress" name="address" type="text" value="{{ request.user.address }}">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Save changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
