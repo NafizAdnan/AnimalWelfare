@@ -1,0 +1,27 @@
+
+{% extends 'new.html' %}
+
+{% block content %}
+
+<h1>{{post.title}}</h1>
+<small>Posted By: {{ post.author.first_name }} {{ post.author.last_name }} </small><br/>
+<hr>
+<br/>
+{{post.body}}
+<br/><br/>
+
+{% if post.picture %}
+    <img src="{{ post.picture.url }}" alt="Post Picture">
+{% endif %}
+
+{% if post.contact_info %}
+    <p>Contact Info - </br>{{ post.contact_info }}</p>
+{% endif %}
+
+{% if post.phone_number %}
+    <p>Phone Number: {{ post.phone_number }}</p>
+{% endif %}
+
+<a href="{%url 'post'%}" class="btn btn-secondary">Back</a>
+
+{% endblock %}

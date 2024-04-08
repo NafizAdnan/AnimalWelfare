@@ -1,0 +1,20 @@
+{% for ticket in tickets %}
+    <div class="ticket">
+        <h3>{{ ticket.title }}</h3>
+        <!-- Display assigned staff member -->
+        <p>Assigned to: {{ ticket.assigned_to.get_full_name or "Not assigned" }}</p>
+        
+        <!-- Form to assign a ticket to a staff member -->
+        {% if request.user.is_superuser %}
+            <form action="{% url 'assign_ticket' ticket.id %}" method="post">
+                {% csrf_token %}
+                <select name="staff_member">
+                    {% for staff in staff_members %}
+                        <option value="{{ staff.id }}" {% if ticket.assigned_to == staff %} selected {% endif %}>{{ staff.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Assign</button>
+            </form>
+        {% endif %}
+    </div>
+{% endfor %}

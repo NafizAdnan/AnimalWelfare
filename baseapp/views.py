@@ -1,3 +1,6 @@
+import stripe
+from django.contrib.messages.storage import session
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.template import RequestContext
@@ -8,6 +11,8 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.csrf import csrf_exempt
+
 from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
@@ -20,7 +25,11 @@ from .utils import *
 import os
 from shutil import copyfile, move
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync   
+from asgiref.sync import async_to_sync
+import json
+from django.shortcuts import render
+from django.http import JsonResponse
+
 # Create your views here.
 
 def home(request):
@@ -65,6 +74,12 @@ def signup(request):
             return redirect('baseapp:signup')
 
         newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email, password=pass1)
+        # newUser.contact = contact
+        # Temporarily until Custom Auth Backend is Ready
+        # newUser.is_active = True
+        # newUser.is_staff = True
+        # newUser.is_superuser = True
+        # End
         newUser.is_active = True
         newUser.save()
         messages.success(request, "Your Account has been created succesfully!!")
@@ -109,6 +124,7 @@ def update_profile(request):
         user.first_name = request.POST.get('fname', user.first_name)
         user.last_name = request.POST.get('lname', user.last_name)
         user.email = request.POST.get('email', user.email)
+        
         user.contact = request.POST['contact'] or user.contact
         user.address = request.POST['address'] or user.address
         user.bio = request.POST['bio'] or user.bio
@@ -119,7 +135,7 @@ def update_profile(request):
             # user.profile_picture = None
             # user.profile_picture.delete(save=True)
             user.profile_picture.delete()
-
+        
         user.save()
         messages.success(request, "Profile Updated Successfully!!")
         return redirect('baseapp:user_profile', username=user.username)
@@ -173,6 +189,8 @@ def signout(request):
     messages.success(request, "Logged Out Successfully!!")
     return redirect('baseapp:home')
 
+
+
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -193,6 +211,8 @@ def activate(request, uidb64, token):
         messages.success(request, "Account NOT Activated!!")
         return redirect('baseapp:signin')
         #return render(request, 'activation_failed.html')
+
+
 
 def account_activate(request,newUser):
     current_site = get_current_site(request)
@@ -215,6 +235,7 @@ def account_activate(request,newUser):
 
     messages.success(request, "Your Account has been activated!!")
     return redirect('baseapp:home')
+
 
 @login_required(login_url='signin')
 def addAnimal(request):
@@ -254,7 +275,7 @@ def addAnimal(request):
     return render(request, 'baseapp/add_animal.html')
 
 def is_animal_in_image(picture, path):
-    
+
     with open(path, 'wb+') as destination:
         for chunk in picture.chunks():
             destination.write(chunk)
@@ -275,8 +296,9 @@ def is_animal_in_image(picture, path):
                         return True
         else:
             print("Error in getting categories!!")
-    
+
     return False
+
 
 @login_required(login_url='signin')
 def updateAnimal(request, id):
@@ -302,7 +324,7 @@ def updateAnimal(request, id):
                 os.remove(temp_path)
                 messages.error(request, "Invalid Image!!")
                 return redirect('baseapp:update_animal', id=id)
-        
+
         if 'video' in request.FILES:
             animal.video = request.FILES['video']
 
@@ -319,7 +341,6 @@ def deleteAnimal(request, id):
     messages.success(request, "Animal Deleted Successfully!!")
     if is_admin(request.user):
         return redirect('baseapp:manage_animals')
-    # return redirect('baseapp:animal-list')
     return redirect('baseapp:upload_history', username=request.user.username)
 
 def animalList(request):
@@ -401,12 +422,13 @@ def addAccessory(request):
 def updateAccessory(request, id):
     accessory = Accessories.objects.get(id=id)
     if request.method == "POST":
+        print(request.POST)
         title = request.POST['title']
         price = request.POST['price']
         description = request.POST['description']
         type = request.POST['type']
         color = request.POST['color']
-
+        stock = request.POST['stock']
         accessory.title = title
         accessory.price = price
         accessory.description = description
@@ -414,6 +436,7 @@ def updateAccessory(request, id):
             accessory.picture = request.FILES['picture']
         accessory.type = type
         accessory.color = color
+        accessory.stock = stock
         accessory.save()
         messages.success(request, "Accessory Updated Successfully!!")
         return redirect('baseapp:manage_accessories')
@@ -449,6 +472,81 @@ def animalsForAdoption(request):
 def animalsForDaycare(request):
     animals = Animal.objects.filter(available_for='Daycare', approved=True)
     return render(request, 'baseapp/animal_for_daycare.html', {'animals':animals})
+
+@login_required(login_url='signin')
+def create_ticket(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', '')
+        message_body = request.POST.get('message_body', '')
+        if title and message_body:
+            ticket = Ticket(title=title, user=request.user)
+            ticket.save()
+            Message.objects.create(ticket=ticket, user=request.user, body=message_body)
+            messages.success(request, "Ticket Created!!")
+            return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
+
+    return render(request, 'baseapp/create_ticket.html')
+
+@login_required(login_url='signin')
+def ticket_detail(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    messages = ticket.messages.all()
+    return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket, 'inbox': messages})
+
+@login_required(login_url='signin')
+def add_message(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    if request.method == 'POST':
+        body = request.POST.get('body', '')
+        if body:
+            Message.objects.create(ticket=ticket, user=request.user, body=body)
+            return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
+    return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket})
+
+@login_required(login_url='signin')
+def list_tickets(request):
+    if request.user.is_superuser:
+        tickets = Ticket.objects.all()
+    else:
+        tickets = Ticket.objects.filter(user=request.user)
+    return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
+
+@login_required(login_url='signin')
+@user_passes_test(lambda u: u.is_superuser)
+def accept_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    ticket.accepted = True
+    ticket.save()
+    messages.success(request, "Ticket Accepted!!")
+    return redirect('baseapp:list_tickets')
+
+@login_required(login_url='signin')
+@user_passes_test(lambda u: u.is_superuser)
+def decline_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    ticket.delete()
+    messages.info(request, "Ticket Declined!!")
+    return redirect('baseapp:list_tickets')
+
+@login_required(login_url='signin')
+def close_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    ticket.status = 'closed'
+    ticket.save()
+    messages.warning(request, "Ticket Closed!!")
+    return redirect('baseapp:list_tickets')
+
+@login_required(login_url='signin')
+@user_passes_test(lambda u: u.is_superuser)
+def assign_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    if request.method == 'POST':
+        staff_member_id = request.POST.get('staff_member')
+        if staff_member_id:
+            ticket.assigned_to_id = staff_member_id
+            ticket.save()
+            return redirect('list_tickets')
+    return render(request, 'baseapp/assign_ticket.html', {'ticket': ticket})
 
 @login_required(login_url='signin')
 def productsForSale(request):
@@ -488,34 +586,287 @@ def animal_detail_2(request, id):
 def request_adoption(request, id):
     # Fetch the animal object by its ID
     animal = get_object_or_404(Animal, id=id)
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        age = request.POST.get('age')
-        breed = request.POST.get('breed')
-        description = request.POST.get('description')
-        location = request.POST.get('location')
-        contact = request.POST.get('contact')
-        vaccinated = request.POST.get('vaccinated', False) == 'on'
-        available_for = request.POST.get('available_for')
-        animal.adopted = True
-        animal.save()
-
-        # Logic to handle adoption request
-        # For example, you might want to notify the admin or perform other actions
-        messages.success(request, "Adoption Request Successful")
-        
-    # Redirect to a success page or to the animal detail page
-        redirect('baseapp:animal_detail', id=id)
-        
+    # Logic to handle adoption request
+    # For example, you might want to notify the admin or perform other actions
+    messages.success(request, "Adoption Request Successful")
+    
+# Redirect to a success page or to the animal detail page
+    redirect('baseapp:animal_detail', id=id)
+    
     return render(request, 'baseapp/animal_detail.html')
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
-def manage_adopt(request):
-    animals = Animal.objects.all()
-    pending = animals.filter(approved=False)
-    return render(request, 'baseapp/manage_adopt.html', {'pending':pending})
+# views.py
 
+from django.db.models import Q
+
+
+@login_required(login_url='signin')
+def productsForSale(request):
+    query = request.GET.get('q')
+    sort_by = request.GET.get('sort_by')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    category = request.GET.get('category')
+    per_page = request.GET.get('per_page', request.session.get('per_page', 10))  # Default to 10 if not provided
+
+    if query is None:
+        products = Accessories.objects.all()
+    else:
+        multiple_q = Q(Q(title__icontains=query) | Q(description__icontains=query))
+        products = Accessories.objects.filter(multiple_q)
+
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+    if category:
+        products = products.filter(type=category)
+    if sort_by == 'price_low_to_high':
+        products = products.order_by('price')
+    elif sort_by == 'price_high_to_low':
+        products = products.order_by('-price')
+
+    request.session['per_page'] = per_page  # Remember the user's choice in the session
+    paginator = Paginator(products, int(per_page))  # Cast to int because session returns a string
+
+    page = request.GET.get('page')
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        products = paginator.page(1)
+    except EmptyPage:
+        products = paginator.page(paginator.num_pages)
+
+    context = {
+        'products': products,
+        'query': query,
+        'sort_by': sort_by,
+        'per_page': per_page
+    }
+
+    if query is None:
+        return render(request, 'baseapp/products_for_sale.html', context)
+    else:
+        return render(request, 'baseapp/productsearch.html', context)
+
+
+
+def add_to_cart(request, accessory_id):
+    if request.method == "POST":
+        print(request.POST)
+        accessory = get_object_or_404(Accessories, id=accessory_id)
+        if accessory.stock < 1:
+            messages.error(request, "Out of stock.")
+            return redirect('baseapp:products_for_sale')
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, accessory=accessory)
+
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+        return redirect('baseapp:products_for_sale')
+
+@login_required
+def remove_from_cart(request, item_id):
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    cart_item.delete()
+    messages.success(request, "Item removed from cart.")
+    return redirect('baseapp:cart')
+
+@login_required
+def adjust_cart_item(request, item_id, action):
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    if action == "add":
+        cart_item.quantity += 1
+    elif action == "subtract":
+        cart_item.quantity -= 1
+        if cart_item.quantity < 1:
+            cart_item.delete()
+            messages.success(request, "Item removed from cart.")
+            return redirect('cart_detail')
+    cart_item.save()
+    messages.success(request, "Cart updated.")
+    return redirect('baseapp:cart')
+
+@login_required
+def cart_view(request):
+    print(request.user)
+    try:
+        cart = Cart.objects.get(user=request.user)
+        print(cart)
+        items = CartItem.objects.filter(cart=cart)
+        total_price = sum(item.accessory.price * item.quantity for item in items)
+    except Cart.DoesNotExist:
+        print("Cart does not exist")
+        items = []
+        total_price = 0
+
+    context = {
+        'items': items,
+        'total_price': total_price
+    }
+    return render(request, 'baseapp/cart.html', context)
+
+
+def product_detail(request, pk):
+    # Retrieve the specific product based on the primary key (pk)
+    product = get_object_or_404(Accessories, pk=pk)
+
+    # You can add any additional logic or data processing here if needed
+
+    return render(request, 'baseapp/product_detail.html', {'product': product})
+
+
+def place_order(request):
+    if request.method == 'POST':
+        # Create a new order with form data
+        new_order = Order()
+        new_order.order_id = generate_random_identifier()  # Generate a random Order ID
+        new_order.user = request.user
+        print(request.POST.get('name'), '########################################################3')
+        cart_items = CartItem.objects.filter(cart__user=request.user)
+        new_order.items_summary = "\n".join(
+            f"{item.quantity}x {item.accessory.title} - ${item.total_price}" for item in cart_items)
+        new_order.total_cost = sum(item.total_price for item in cart_items)
+        print(request.POST.get('name'), '########################################################3')
+        new_order.name = request.POST.get('name')
+        new_order.email = request.POST.get('email')
+        new_order.phone = request.POST.get('phone')
+        new_order.city = request.POST.get('city')
+        new_order.state = request.POST.get('state')
+        new_order.address = request.POST.get('address')
+        new_order.payment_status = False  # Payment status is initially False
+        new_order.save()
+        # Clear the user's cart
+        CartItem.objects.filter(cart__user=request.user).delete()
+        # Redirect to a new URL for order confirmation
+        return redirect('baseapp:order_status', order_id=new_order.id)
+        #return redirect('order_confirmation', order_id=new_order.order_id)
+    else:
+        # If the request is GET, display the cart items and total price
+        cart_items = CartItem.objects.filter(cart__user=request.user)
+        total_price = sum(item.total_price for item in cart_items)
+
+        return render(request, 'baseapp/place_order.html', {'items': cart_items, 'total_price': total_price})
+
+@login_required
+def cart_view(request):
+    print(request.user)
+    try:
+        cart = Cart.objects.get(user=request.user)
+        print(cart)
+        items = CartItem.objects.filter(cart=cart)
+        total_price = sum(item.accessory.price * item.quantity for item in items)
+    except Cart.DoesNotExist:
+        print("Cart does not exist")
+        items = []
+        total_price = 0
+
+    context = {
+        'items': items,
+        'total_price': total_price
+    }
+    return render(request, 'baseapp/cart.html', context)
+
+
+def order_history(request, username):
+    #orders = Order.objects.filter(user__username=username)  # Ensure you're filtering by the related user's username
+    orders = Order.objects.filter(user__username=username).order_by('-created_at')
+    return render(request, 'baseapp/order_history.html', {'orders': orders})
+
+def order_status(request, order_id):
+    # Retrieve the order using the order_id
+    order = get_object_or_404(Order, id=order_id)
+    # Pass the order to the template
+    return render(request, 'baseapp/order_status.html', {'order': order})
+    
+
+#STRIPE
+# views.py
+def payment_success(request, order_id):
+    # Logic to handle successful payment
+    order = get_object_or_404(Order, id=order_id)
+    if not order.payment_status:
+        order.payment_status=True
+        order.save()
+    # You can retrieve the session ID with request.GET.get('session_id')
+    return render(request, 'baseapp/success.html')
+
+def payment_cancel(request, order_id):
+    # Logic to handle payment cancellation
+    return render(request, 'baseapp/cancel.html')
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+def create_stripe_session(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if not order.payment_status:
+        # Split the items_summary by line breaks to process each item
+        items = order.items_summary.split('\n')
+        line_items = []
+        for item in items:
+            # Assuming each item follows the format "quantityx title - $total_price"
+            parts = item.split(' - $')
+            quantity, title = parts[0].split('x ')
+            total_price = parts[1]
+            line_items.append({
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': title.strip(),
+                        #'description': item
+                    },
+                    'unit_amount': int(float(total_price) * 100/int(quantity.strip())),
+                },
+                'quantity': int(quantity.strip()),
+            })
+
+        # Create a Stripe Checkout Session
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            client_reference_id=order.id,
+            success_url=request.build_absolute_uri(reverse('baseapp:payment_success', args=[order.id])),
+            cancel_url=request.build_absolute_uri(reverse('baseapp:payment_cancel', args=[order.id])),
+        )
+        return redirect(session.url, code=303)
+    else:
+        print('NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+        print('**********************************************')
+        return redirect('baseapp:order_status', order_id=order.id)
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = 'your-endpoint-secret'  # Replace with your endpoint's secret
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the checkout.session.completed event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+
+        # Retrieve the order using the session ID
+        order_id = session.get('client_reference_id')
+        order = Order.objects.get(id=order_id)
+
+        # Update the order's payment status
+        order.payment_status = True
+        order.save()
+
+    return HttpResponse(status=200)
 
 from django.shortcuts import render
 import requests
@@ -582,5 +933,3 @@ def know_before_dog(request):
     else:
             # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_dog.html')
-
- 

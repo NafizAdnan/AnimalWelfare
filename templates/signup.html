@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Sign Up</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .alert-container {
+      position: fixed;
+      top: 100px;
+      right: 50%;
+      left: auto;
+      width: 300px;
+      z-index: 2000;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+      background-color: aquamarine;
+    }
+
+    .alert {
+      margin-top: 5px;
+      border-radius: 2px;
+      text-align: center;
+    }
+
+    .alert strong {
+      margin-right: 10px;
+    }
+
+    .alert-dismissible .close {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      color: inherit;
+    }
+
+    input,
+    button,
+    .rounded-md {
+      border-width: 2px !important;
+      /* Increase border width */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="alert-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center" role="alert">
+      <strong>Message:</strong> {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  <form action="" method="post">
+    <section class="bg-white">
+      <div class="lg:grid lg:min-h-screen lg:grid-cols-12">
+        <section class="relative flex h-32 items-end bg-gray-900 lg:col-span-5 lg:h-full xl:col-span-6">
+          <img alt="" src="/assets/img/Hero/pc3.webp" class="absolute inset-0 h-full w-full object-cover opacity-80" />
+          <div class="hidden lg:relative lg:block lg:p-12">
+            <a class="block text-white" href="#">
+              <span class="sr-only">Home</span>
+            </a>
+            <h2 class="mt-6 text-2xl font-bold text-white sm:text-3xl md:text-4xl"
+              style="background-color: rgba(0, 0, 0, 0.5); padding: 10px;">
+              Welcome to Animal Welfare 🐶🐾
+            </h2>
+            <p class="mt-4 leading-relaxed text-white/90">___________________________________________</p>
+          </div>
+        </section>
+        <main class="flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6">
+          <div class="max-w-xl lg:max-w-3xl">
+            <div class="relative -mt-16 block lg:hidden">
+              <a class="inline-flex size-16 items-center justify-center rounded-full bg-white text-blue-600 sm:size-20"
+                href="#">
+                <span class="sr-only">Home</span>
+                <svg class="h-8 sm:h-10" viewBox="0 0 28 24" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+              </a>
+              <h1 class="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Welcome to Animal Welfare 🐾
+              </h1>
+              <p class="mt-4 leading-relaxed text-gray-500">Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+                Eligendi nam dolorum aliquam, quibusdam aperiam voluptatum.</p>
+            </div>
+            <form action="" method="POST" class="mt-8 grid grid-cols-6 gap-6">
+              {% csrf_token %}
+              <div class="col-span-6 sm:col-span-3">
+                <label for="FirstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                <input type="text" id="FirstName" name="fname"
+                  class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+              </div>
+              <div class="col-span-6 sm:col-span-3">
+                <label for="LastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                <input type="text" id="LastName" name="lname"
+                  class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+              </div>
+              <div class="col-span-6">
+                <label for="username" class="block text-sm font-medium text-gray-700"> username </label>
+                <input type="text" id="username" name="username"
+                  class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+              </div>
+              <div class="col-span-6">
+                <label for="email" class="block text-sm font-medium text-gray-700"> email </label>
+                <input type="email" id="email" name="email"
+                  class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+              </div>
+              <div class="col-span-6 sm:col-span-3">
+                <label for="Password" class="block text-sm font-medium text-gray-700"> Password </label>
+                <input type="password" id="pass1" name="pass1"
+                  class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+              </div>
+              <div class="col-span-6 sm:col-span-3">
+                <label for="PasswordConfirmation" class="block text-sm font-medium text-gray-700">Password
+                  Confirmation</label>
+                <input type="password" id="pass2" name="pass2"
+                  class="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm" />
+              </div>
+              <div class="col-span-6">
+                <label for="MarketingAccept" class="flex gap-4">
+                  <input type="checkbox" id="MarketingAccept" name="marketing_accept"
+                    class="size-5 rounded-md border-gray-200 bg-white shadow-sm" />
+                  <span class="text-sm text-gray-700"></span>
+                </label>
+              </div>
+              <div class="col-span-6">
+                <p class="text-sm text-gray-500">By creating an account, you agree to our <a href="#"
+                    class="text-gray-700 underline"> terms and conditions </a> and <a href="#"
+                    class="text-gray-700 underline">privacy policy</a>.</p>
+              </div>
+              <div class="col-span-6 sm:flex sm:items-center sm:gap-4">
+                <button
+                  class="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500">Create
+                  an account</button>
+                <p class="mt-4 text-sm text-gray-500 sm:mt-0">Already have an account? <a href="/signin"
+                    class="text-gray-700 underline">Log in</a>.</p>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </section>
+  </form>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const alerts = document.querySelectorAll('.alert');
+      alerts.forEach(function (alert) {
+        setTimeout(function () {
+          $(alert).alert('close');
+        }, 5000);
+      });
+    });
+  </script>
+</body>
+
+</html>
