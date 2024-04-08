@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Know Before Adopting a Cat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdde97;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #000103;
+            margin-top: 20px;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #000305;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #000307;
+        }
+        button[type="button"] {
+            padding: 10px 20px;
+            background-color: #000305;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="button"]:hover {
+            background-color: #000307;
+        }
+
+
+        .info-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #000103;
+            margin-bottom: 10px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        p {
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            color: #ff0000;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .button-container button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Know Before Adopting a Cat</h1>
+    
+    <!-- Form to input cat name -->
+    <form method="post">
+        {% csrf_token %}
+        <label for="cat_name">Enter Cat's Breed:</label>
+        <input type="text" id="cat_name" name="cat_name" required>
+        <div class="button-container">
+            <button type="submit">SUBMIT</button>
+            <a href="{% url 'baseapp:user_dashboard' %}">
+                <button type="button">BACK</button>
+            </a>
+        </div>
+    </form>
+
+    <!-- Display cat information -->
+    {% if api_response %}
+        <div class="info-container">
+            <h2>{{ api_response.0.name }} Information</h2>
+            
+            <div>
+                <h3>Image</h3>
+                <img src="{{ api_response.0.image_link }}" alt="{{ api_response.0.name }} Image">
+            </div>
+            
+            <div>
+                <h3>Characteristics</h3>
+                <p>Length: {{ api_response.0.length }}</p>
+                <p>Origin: {{ api_response.0.origin }}</p>
+                <p>Family Friendly: {{ api_response.0.family_friendly }}</p>
+                <p>Shedding: {{ api_response.0.shedding }}</p>
+                <p>General Health: {{ api_response.0.general_health }}</p>
+                <p>Playfulness: {{ api_response.0.playfulness }}</p>
+                <p>Meowing: {{ api_response.0.meowing }}</p>
+                <p>Children Friendly: {{ api_response.0.children_friendly }}</p>
+                <p>Stranger Friendly: {{ api_response.0.stranger_friendly }}</p>
+                <p>Grooming: {{ api_response.0.grooming }}</p>
+                <p>Intelligence: {{ api_response.0.intelligence }}</p>
+                <p>Other Pets Friendly: {{ api_response.0.other_pets_friendly }}</p>
+                <p>Weight Range: {{ api_response.0.min_weight }} - {{ api_response.0.max_weight }} lbs</p>
+                <p>Life Expectancy: {{ api_response.0.min_life_expectancy }} - {{ api_response.0.max_life_expectancy }} years</p>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Display error message if any -->
+    {% if error_message %}
+        <p class="error-message">{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>

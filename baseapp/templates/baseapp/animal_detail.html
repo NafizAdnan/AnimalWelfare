@@ -4,9 +4,8 @@
 
 {% block content %}
 <div class="text-center p-10">
-    <h1 class="font-bold text-4xl mb-4">Name: {{ animal.title }}</h1>
-    <p class="text-xl">Description: {{ animal.description }}</p>
-    
+    <h1 class="font-bold text-4xl mb-4 text-gray-500">Name: {{ animal.title }}</h1>
+    <p class="text-xl text-gray-500">Description: {{ animal.description }}</p>
     <p class="text-gray-500">Age(months): {{ animal.age }}</p>
     <p class="text-gray-500">Breed: {{ animal.breed }}</p>
     <p class="text-gray-500">Location: {{ animal.location }}</p>
@@ -17,10 +16,25 @@
     <p class="text-gray-500">Vaccination Status: Not Vaccinated</p>
     {% endif %}
 
-    <form action="{% url 'baseapp:request_adoption' pk=animal.pk %}" method="POST">
-        {% csrf_token %}
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4">Request Adoption</button>
-    </form>
+    <!-- Display image -->
+    <div style="text-align: center;">
+        {% if animal.picture %}
+        <img src="{{ animal.picture.url }}" alt="{{ animal.title }} Image" class="mt-5">
+        {% endif %}
+    </div>
 
+
+    <!-- Display video -->
+    {% if animal.video %}
+    <video controls class="mt-4">
+        <source src="{{ animal.video.url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    {% endif %}
+
+    <form action="http://127.0.0.1:8000/chat/" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full mt-4">Live Chat for Adoption</button>
+    </form>
 </div>
 {% endblock content %}

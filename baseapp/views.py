@@ -3,9 +3,9 @@ from django.contrib.messages.storage import session
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
+from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
 from django.contrib.sites.shortcuts import get_current_site
-# from django.contrib.auth.models import User
 from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
@@ -17,7 +17,6 @@ from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
 from django.conf import settings
-# from django.views.generic import ListView, DetailView,CreateView,UpdateView,DeleteView
 from .models import *
 from django.urls import reverse_lazy
 from pprint import pprint
@@ -25,6 +24,8 @@ from django.urls import reverse
 from .utils import *
 import os
 from shutil import copyfile, move
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 import json
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -36,7 +37,7 @@ def home(request):
         return redirect('baseapp:admin_dashboard')
     if request.user.is_authenticated:
         return redirect('baseapp:user_dashboard')
-    return render(request, 'baseapp/index.html')
+    return render(request, 'baseapp/index.html',{'room_name':"broadcast"})
 
 def signup(request):
 
@@ -45,13 +46,6 @@ def signup(request):
     
     if request.method == "POST":
         print(request.POST)
-        # username = request.POST['username']
-        # fname = request.POST['fname']
-        # lname = request.POST['lname']
-        # email = request.POST['email']
-        # pass1 = request.POST['pass1']
-        # pass2 = request.POST['pass2']
-        # contact = request.POST['contact']
         username = request.POST.get('username')
         fname = request.POST.get('fname')
         lname = request.POST.get('lname')
@@ -353,9 +347,6 @@ def animalList(request):
     animals = Animal.objects.all()
     return render(request, 'baseapp/animal_list.html', {'animals':animals})
 
-def animalDetail(request, id):
-    animal = Animal.objects.get(id=id)
-    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
 @login_required(login_url='signin')
 def userProfile(request, username):
@@ -374,7 +365,7 @@ def is_admin(user):
 @login_required(login_url='signin')
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def adminDashboard(request):
-    return render(request, 'baseapp/admin_dashboard.html')
+    return render(request, 'baseapp/admin_dashboard.html',{'room_name':"broadcast"})
 
 @login_required(login_url='signin')
 @user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
@@ -470,7 +461,7 @@ def viewProduct(request, id):
 
 @login_required(login_url='signin')
 def userDashboard(request):
-    return render(request, 'baseapp/user_dashboard.html')
+    return render(request, 'baseapp/user_dashboard.html',{'room_name':"broadcast"})
 
 @login_required(login_url='signin')
 def animalsForAdoption(request):
@@ -556,13 +547,54 @@ def assign_ticket(request, ticket_id):
             ticket.save()
             return redirect('list_tickets')
     return render(request, 'baseapp/assign_ticket.html', {'ticket': ticket})
-'''
+
 @login_required(login_url='signin')
 def productsForSale(request):
     products = Accessories.objects.all
     return render(request, 'baseapp/products_for_sale.html', {'products':products})
 
-'''
+@login_required(login_url='signin')
+def animal_detail(request, id):
+    if request.user.is_authenticated:  # Check if user is authenticated
+        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
+            print("User ID:", request.user.id)
+        else:
+            print("User has no 'id' attribute")
+    else:
+        print("User is not authenticated")
+
+    animal = get_object_or_404(Animal, id=id)
+
+    return render(request, 'baseapp/animal_detail.html', {'animal': animal,'user': request.user})
+
+@login_required(login_url='signin')
+def animal_detail_2(request, id):
+    if request.user.is_authenticated:  # Check if user is authenticated
+        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
+            print("User ID:", request.user.id)
+        else:
+            print("User has no 'id' attribute")
+    else:
+        print("User is not authenticated")
+
+    animal = get_object_or_404(Animal, id=id)
+
+    return render(request, 'baseapp/animal_detail_2.html', {'animal': animal,'user': request.user})
+
+
+@login_required(login_url='signin')
+def request_adoption(request, id):
+    # Fetch the animal object by its ID
+    animal = get_object_or_404(Animal, id=id)
+    # Logic to handle adoption request
+    # For example, you might want to notify the admin or perform other actions
+    messages.success(request, "Adoption Request Successful")
+    
+# Redirect to a success page or to the animal detail page
+    redirect('baseapp:animal_detail', id=id)
+    
+    return render(request, 'baseapp/animal_detail.html')
+
 # views.py
 
 from django.db.models import Q
@@ -706,10 +738,8 @@ def place_order(request):
         new_order.address = request.POST.get('address')
         new_order.payment_status = False  # Payment status is initially False
         new_order.save()
-
         # Clear the user's cart
         CartItem.objects.filter(cart__user=request.user).delete()
-
         # Redirect to a new URL for order confirmation
         return redirect('baseapp:order_status', order_id=new_order.id)
         #return redirect('order_confirmation', order_id=new_order.order_id)
@@ -837,3 +867,69 @@ def stripe_webhook(request):
         order.save()
 
     return HttpResponse(status=200)
+
+from django.shortcuts import render
+import requests
+@login_required(login_url='signin')
+def animal_info(request):
+    # Initialize variables
+    animal_name = ''
+    api_response = ''
+
+    # Check if the form is submitted
+    if request.method == 'POST':
+        # Extract the animal name from the form
+        animal_name = request.POST.get('animal_name', '')
+
+        # Construct the API URL with the provided animal name
+        api_url = 'https://api.api-ninjas.com/v1/animals?name={}'.format(animal_name)
+
+        # Make the API call
+        response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
+
+        # Check the response status
+        if response.status_code == requests.codes.ok:
+            # If successful, get the API response
+            api_response = response.json()
+        else:
+            # If there's an error, display the error message
+            api_response = {'error': 'Error occurred while fetching data'}
+
+    # Render the template with the form and API response
+    return render(request, 'baseapp/animal_info.html', {'animal_name': animal_name, 'api_response': api_response})
+
+@login_required(login_url='signin')
+def know_before(request):
+    return render(request, 'baseapp/know_before.html')
+
+@login_required(login_url='signin')
+def know_before_cat(request):
+    if request.method == 'POST':
+        name = request.POST.get('cat_name')  # Get the value of 'cat_name' from the form
+        api_url = 'https://api.api-ninjas.com/v1/cats?name={}'.format(name)
+        response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
+        if response.status_code == requests.codes.ok:
+            api_response = response.json()
+            return render(request, 'baseapp/know_before_cat.html', {'api_response': api_response})
+        else:
+            error_message = "Error: {} {}".format(response.status_code, response.text)
+            return render(request, 'baseapp/know_before_cat.html', {'error_message': error_message})
+    else:
+            # Render an empty form when the page is initially loaded
+        return render(request, 'baseapp/know_before_cat.html')
+    
+@login_required(login_url='signin')
+def know_before_dog(request):
+    if request.method == 'POST':
+        name = request.POST.get('dog_name')  # Get the value of 'cat_name' from the form
+        api_url = 'https://api.api-ninjas.com/v1/dogs?name={}'.format(name)
+        response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
+        if response.status_code == requests.codes.ok:
+            api_response = response.json()
+            return render(request, 'baseapp/know_before_dog.html', {'api_response': api_response})
+        else:
+            error_message = "Error: {} {}".format(response.status_code, response.text)
+            return render(request, 'baseapp/know_before_dog.html', {'error_message': error_message})
+    else:
+            # Render an empty form when the page is initially loaded
+        return render(request, 'baseapp/know_before_dog.html')

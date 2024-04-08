@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-# from .views import PostView,AnimalDetailView,AddPostView,UpdatePostView,DeletePostView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -33,10 +32,7 @@ urlpatterns = [
      path('add-animal', views.addAnimal, name='add_animal'),
      path('update-animal/<int:id>', views.updateAnimal, name='update_animal'),
      path('delete-animal/<int:id>', views.deleteAnimal, name='delete_animal'),
-     path('animal/<int:id>', views.animalDetail, name='animal_detail'),
      path('user/<str:username>', views.userProfile, name='user_profile'),
-     # path('animal', views.animal, name='animal'),
-     # path('search', views.search, name='search'),
      path('user/<str:username>/upload-history', views.uploadHistory, name='upload_history'),
      path('user/<str:username>/order-history', views.order_history, name='order_history'),
      path('admin-dashboard', views.adminDashboard, name='admin_dashboard'),
@@ -49,15 +45,14 @@ urlpatterns = [
      path('update_accessory/<int:id>', views.updateAccessory, name='update_accessory'),
      path('delete_accessory/<int:id>', views.deleteAccessory, name='delete_accessory'),
      path('product/<int:id>', views.viewProduct, name='view_product'),
-     # path('animal/<int:id>', views.animalDetail, name='animal_detail'),
      path('animal/for_adoption', views.animalsForAdoption, name='animals_for_adoption'),
      path('animal/for_daycare', views.animalsForDaycare, name='animals_for_daycare'),
      path('product/for_sale', views.productsForSale, name='products_for_sale'),
      path('animal/<int:pk>/', views.animal_detail, name='animal_detail'),
      path('request-adoption/<int:pk>/', views.request_adoption, name='request_adoption'),
+     path('animal_adoption/<int:id>/', views.animal_detail, name='animal_detail'),
+     path('request_adoption/<int:id>/', views.request_adoption, name='request_adoption'),
      path('manage_adopt/', views.manage_adopt, name='manage_adopt'),
-     path('approve_adopt/<int:pk>/', views.approve_adopt, name='approve_adopt'),
-     #path('user/<int:pk>/upload-history', views.adoptionHistory, name='adoption_history'),
      path('update-password', views.change_password, name='change_password'),
      path('create-ticket', views.create_ticket, name='create_ticket'),
      path('ticket/<int:ticket_id>', views.ticket_detail, name='ticket_detail'),
@@ -79,6 +74,12 @@ urlpatterns = [
      path('payment_success/<order_id>/', views.payment_success, name='payment_success'),
      path('payment_cancel/<order_id>/', views.payment_cancel, name='payment_cancel'),
      path('webhooks/stripe/', views.stripe_webhook, name='stripe_webhook'),
-
+     path('animal-info/', views.animal_info, name='animal_info'),
+     path('know_before/', views.know_before, name='know_before'),
+     path('know_before_cat/', views.know_before_cat, name='know_before_cat'),
+     path('know_before_dog/', views.know_before_dog, name='know_before_dog'),
+     path('animal_daycare/<int:id>/', views.animal_detail_2, name='animal_detail_2'),
+     
 ]
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

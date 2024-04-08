@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdde97;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #00060c;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #000407;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Animal Information</h1>
+        <form method="post">
+            {% csrf_token %}
+            <label for="animal_name">Enter Animal Name:</label>
+            <input type="text" id="animal_name" name="animal_name" value="{{ animal_name }}">
+            <button type="submit">Get Info</button>
+        </form>
+
+        {% if api_response %}
+            <h2>Information about {{ animal_name }}</h2>
+            <h3>Name: {{ api_response.0.name }}</h3>
+            <h3>Taxonomy:</h3>
+            <ul>
+                {% for key, value in api_response.0.taxonomy.items %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endfor %}
+            </ul>
+            <h3>Locations:</h3>
+            <ul>
+                {% for location in api_response.0.locations %}
+                    <li>{{ location }}</li>
+                {% endfor %}
+            </ul>
+            <h3>Characteristics:</h3>
+            <ul>
+                {% for key, value in api_response.0.characteristics.items %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <button type="submit" onclick="history.back()">BACK</button>
+    
+</body>
+</html>
+
