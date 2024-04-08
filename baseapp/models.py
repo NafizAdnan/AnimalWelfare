@@ -5,6 +5,9 @@ from django.urls import reverse
 from datetime import date
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
+from django.utils import timezone
+
+from baseapp import forms
 
 
 def user_directory_path(instance, filename):
@@ -66,7 +69,6 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    friends = models.ManyToManyField("User",blank=True)
 
     def calculate_age(self):
         if not self.dob:
@@ -122,9 +124,11 @@ class Animal(models.Model):
                              validators=[FileExtensionValidator(allowed_extensions=['MOV', 'avi', 'mp4', 'webm', 'mkv'])])
     vaccinated = models.BooleanField(default=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # user_identifier = models.CharField(max_length=100, null=True, blank=True)
     available_for = models.CharField(max_length=20, default='adoption')
     date_uploaded = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
+    adopted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,related_name='adopted_animals')
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -165,8 +169,75 @@ class Accessories(models.Model):
     
     def get_absolute_url(self):
         return reverse('accessory-detail',args=(str(self.id)))
-    
-class Support(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
 
+
+class Ticket(models.Model):
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+    )
+    title = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=6, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+    # assigned_to = models.ForeignKey(User, related_name='assigned_tickets', on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'is_staff': True})
+
+    def __str__(self):
+        return self.title
+
+class Message(models.Model):
+    ticket = models.ForeignKey(Ticket, related_name='messages', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message by {self.user.username} on {self.created_at}"
+
+class Cart(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart of {self.user.username}"
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    accessory = models.ForeignKey(Accessories, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} of {self.accessory.title}"
+
+    @property
+    def total_price(self):
+        return self.quantity * self.accessory.price
+
+
+
+
+import random
+import string
+
+def generate_random_identifier(length=5):
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(characters, k=length))
+
+class Order(models.Model):
+    id = models.CharField(max_length=5,primary_key=True, unique=True, default=generate_random_identifier)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    address = models.TextField()
+    payment_status = models.BooleanField(default=False)
+    items_summary = models.TextField(blank=True)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"

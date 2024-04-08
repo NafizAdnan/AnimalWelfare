@@ -24,6 +24,11 @@
             {% endif %}
             <div class="px-4 py-3">
                 <h3 class="text-lg font-bold text-black truncate capitalize">{{ animal.title }}</h3>
+                <!-- <p class="text-gray-600 text-sm my-1">{{ animal.description|truncatewords:15 }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-semibold text-black">${{ animal.price }}</span>
+                    <span class="text-gray-500 text-xs">{{ animal.stock }} in stock</span>
+                </div> -->
                 <p class="text-gray-600 text-sm my-1">{{ animal.stock }} Available </p>
             </div>
         </a>
