@@ -1,0 +1,113 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  .order-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 25px; /* Increased vertical gaps */
+    margin-bottom: 20px;
+  }
+  .order-table th, .order-table td {
+    border: none;
+    padding: 15px;
+    text-align: left;
+    font-size: 1.2em; /* Increased font size */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtle shadow effect */
+  }
+  .order-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.3em; /* Slightly larger font size for headers */
+  }
+  .payment-status-paid {
+    color: #28a745; /* Green color for paid status */
+    font-weight: bold; /* Highlighting the payment status */
+  }
+  .payment-status-not-paid {
+    color: #dc3545; /* Red color for not paid status */
+    font-weight: bold; /* Highlighting the payment status */
+  }
+  h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .order-summary {
+    font-size: 0.9em; /* Smaller font size for summary */
+  }
+  .order-summary strong {
+    font-weight: bold; /* Make the label bold */
+  }
+
+    .clean-cut-btn {
+      background: linear-gradient(145deg, #cacaca, #f0f0f0); /* Subtle gradient for depth */
+      color: #333; /* Dark text for contrast */
+      padding: 1px 5px; /* Comfortable padding */
+      border: none; /* No border for a clean look */
+      border-radius: 6px; /* Slightly rounded corners for a modern touch */
+      font-size: 0.7em; /* Standard font size */
+      font-weight: bold; /* Bold text */
+      text-transform: uppercase; /* Uppercase text for a modern feel */
+      cursor: pointer; /* Pointer cursor on hover */
+      box-shadow: 5px 5px 15px #a8a8a8, -5px -5px 15px #ffffff; /* Dual shadow for a 3D effect */
+      transition: all 0.3s ease; /* Smooth transition for hover effects */
+    }
+
+    .clean-cut-btn:hover {
+       background: linear-gradient(145deg, #f0f0f0, #cacaca); /* Inverted gradient on hover */
+       box-shadow: 10px 10px 20px #a8a8a8, -10px -10px 20px #ffffff; /* Enhanced shadow on hover */
+       transform: translateY(-2px); /* Slight raise on hover */
+    }
+
+</style>
+
+<h2>Order History</h2>
+<table class="order-table">
+  <tr>
+    <th>Order ID</th>
+    <!--<th>User</th>-->
+    <th>Name</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>City</th>
+    <th>State</th>
+    <th>Address</th>
+    <th>Payment Status</th>
+    <th>Items Ordered</th>
+    <th>Total Amount</th>
+  </tr>
+  {% for order in orders %}
+  <tr>
+    <td>{{ order.id }}</td>
+    <!--<td>{ { order.user.username }}</td>-->
+    <td>{{ order.name }}</td>
+    <td>{{ order.email }}</td>
+    <td>{{ order.phone }}</td>
+    <td>{{ order.city }}</td>
+    <td>{{ order.state }}</td>
+    <td>{{ order.address }}</td>
+    <td class="{{ order.payment_status|yesno:'payment-status-paid,payment-status-not-paid' }}">
+        {{ order.payment_status|yesno:"Paid,Not Paid" }}
+        {% if not order.payment_status %}
+          <!-- Pay Now button only for unpaid orders -->
+          <form action="{% url 'baseapp:order_status' order.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="clean-cut-btn">Pay Now</button>
+          </form>
+        {% endif %}
+    </td>
+    <td class="order-summary"><strong>Items:</strong> <br>{{ order.items_summary }}</td>
+    <td class="order-summary"><strong>Total:</strong> ${{ order.total_cost }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

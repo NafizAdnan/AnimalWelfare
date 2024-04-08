@@ -5,6 +5,9 @@ from django.urls import reverse
 from datetime import date
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
+from django.utils import timezone
+
+from baseapp import forms
 
 
 def user_directory_path(instance, filename):
@@ -191,3 +194,50 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message by {self.user.username} on {self.created_at}"
+
+class Cart(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart of {self.user.username}"
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    accessory = models.ForeignKey(Accessories, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} of {self.accessory.title}"
+
+    @property
+    def total_price(self):
+        return self.quantity * self.accessory.price
+
+
+
+
+import random
+import string
+
+def generate_random_identifier(length=5):
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(characters, k=length))
+
+class Order(models.Model):
+    id = models.CharField(max_length=5,primary_key=True, unique=True, default=generate_random_identifier)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    address = models.TextField()
+    payment_status = models.BooleanField(default=False)
+    items_summary = models.TextField(blank=True)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"

@@ -89,18 +89,17 @@ CHANNEL_LAYERS = {
     'default' : {
         'BACKEND' : 'channels.layers.InMemoryChannelLayers'
 
-    
+
     },
     'default' : {
         'BACKEND' : 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             "hosts":[('127.0.0.1',6379)],
         }
-        
+
     }
 
 }
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -172,7 +171,12 @@ INTERNAL_IPS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 IMAGGA_API_KEY = 'acc_2c50c2a33049d25'
 IMAGGA_API_SECRET = 'c6cfd170d8b52a7c77196649bb5895dd'
 IMAGGA_API_AUTH_HEADER = 'Basic YWNjXzJjNTBjMmEzMzA0OWQyNTpjNmNmZDE3MGQ4YjUyYTdjNzcxOTY2NDliYjU4OTVkZA=='
 TEMP_UPLOAD_DIR = os.path.join(MEDIA_ROOT, 'temp_uploads')
+
+STRIPE_PUBLIC_KEY = "pk_test_51Oyc8GCBStRTnWV08qG751ZkNBuUH7K0XJbzO1MfGXw0lW0bnIyYsOjuJcEF8cILaY0YpVP7ZTlUY2CqZ83Q4btG005EHsG6MA"
+STRIPE_SECRET_KEY = "sk_test_51Oyc8GCBStRTnWV0CCk4RRfi4CCGaYqVVRgtwupnsL7vf7WglaTeKflYRApA5IdJN7Ft15j6SYjmnyQF4sRp0LK000wIUwrfpD"
+STRIPE_WEBHOOK_SECRET = "whsec_dc2abda6da8a04aa68e196d57b2699d540053ca86d1227baf34a7b8fb246873a"

@@ -24,6 +24,12 @@ urlpatterns = [
     path('password_reset_complete/',
          auth_views.PasswordResetCompleteView.as_view(),
          name='password_reset_complete'),
+     #path('post', views.post, name='post'),
+     # path('post/',PostView.as_view(),name='post'),
+     # path('animal/<int:pk>',AnimalDetailView.as_view(),name='animal-detail'),
+     # path('add_post/',AddPostView.as_view(),name='add_post'),
+     # path('update_post/<int:pk>',UpdatePostView.as_view(),name='update_post'),
+     # path('delete_post/<int:pk>',DeletePostView.as_view(),name='delete_post'),
      path('add-animal', views.addAnimal, name='add_animal'),
      path('update-animal/<int:id>', views.updateAnimal, name='update_animal'),
      path('delete-animal/<int:id>', views.deleteAnimal, name='delete_animal'),
@@ -32,6 +38,7 @@ urlpatterns = [
      # path('animal', views.animal, name='animal'),
      # path('search', views.search, name='search'),
      path('user/<str:username>/upload-history', views.uploadHistory, name='upload_history'),
+     path('user/<str:username>/order-history', views.order_history, name='order_history'),
      path('admin-dashboard', views.adminDashboard, name='admin_dashboard'),
      path('user-dashboard', views.userDashboard, name='user_dashboard'),
      path('manage_animals', views.manageAnimals, name='manage_animals'),
@@ -61,6 +68,17 @@ urlpatterns = [
      path('ticket/<int:ticket_id>/close/', views.close_ticket, name='close_ticket'),
      # path('ticket/<int:ticket_id>/reopen/', views.reopen_ticket, name='reopen_ticket'),
      path('ticket/<ticket_id>/delete/', views.decline_ticket, name='decline_ticket'),
-     
-     ]
+     path('cart/add/<int:accessory_id>/', views.add_to_cart, name='add_to_cart'),
+     path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+     path('cart/adjust/<int:item_id>/<str:action>/', views.adjust_cart_item, name='adjust_cart_item'),
+     path('cart/', views.cart_view, name='cart'),
+     path('product/<int:pk>/', views.product_detail, name='product_detail'),
+     path('place_order/', views.place_order, name='place_order'),
+     path('order_status/<str:order_id>/', views.order_status, name='order_status'),
+     path('create_stripe_session/<order_id>/', views.create_stripe_session, name='create_stripe_session'),
+     path('payment_success/<order_id>/', views.payment_success, name='payment_success'),
+     path('payment_cancel/<order_id>/', views.payment_cancel, name='payment_cancel'),
+     path('webhooks/stripe/', views.stripe_webhook, name='stripe_webhook'),
+
+]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
