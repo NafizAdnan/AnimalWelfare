@@ -52,7 +52,6 @@ urlpatterns = [
      path('request-adoption/<int:pk>/', views.request_adoption, name='request_adoption'),
      path('animal_adoption/<int:id>/', views.animal_detail, name='animal_detail'),
      path('request_adoption/<int:id>/', views.request_adoption, name='request_adoption'),
-     path('manage_adopt/', views.manage_adopt, name='manage_adopt'),
      path('update-password', views.change_password, name='change_password'),
      path('create-ticket', views.create_ticket, name='create_ticket'),
      path('ticket/<int:ticket_id>', views.ticket_detail, name='ticket_detail'),
