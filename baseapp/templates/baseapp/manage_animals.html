@@ -1,16 +1,10 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<style>
-    .my-modal-position {
-        padding-top: 100px; /* Adjust this value to move the modal down */
-    }
-</style>
 
-<div class="container mx-auto px-4 sm:px-8 py-8 bg-gray-100">
+<div class="container mx-auto px-4 sm:px-8 py-4 bg-gray-100">
     <!-- Tabs/Navs -->
-    <div class="mb-8">
+    <div class="mb-4">
         <ul class="flex border-b">
             <!-- Add appropriate URL names -->
             <li class="-mb-px mr-1">
@@ -29,7 +23,7 @@
     </div>
 
     <!-- Table Title -->
-    <h2 class="text-lg font-semibold mb-4 text-black">Animal Uploads</h2>
+    <h2 class="text-lg font-semibold mb-4 text-black text-center">Animal Uploads</h2>
 
     <!-- Animals Table -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">

@@ -216,8 +216,6 @@ class CartItem(models.Model):
         return self.quantity * self.accessory.price
 
 
-
-
 import random
 import string
 
@@ -234,10 +232,12 @@ class Order(models.Model):
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=50)
     address = models.TextField()
+    payment = models.CharField(max_length=20, default='online')
     payment_status = models.BooleanField(default=False)
     items_summary = models.TextField(blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(default=timezone.now)
+    delivery = models.CharField(max_length=20, default='pending')
 
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"

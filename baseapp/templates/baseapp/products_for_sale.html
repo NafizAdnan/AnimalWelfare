@@ -1,42 +1,319 @@
 {% extends 'main.html' %}
 
-{% block title %}On Sale{% endblock title %}
+{% block title %}On Sale{% endblock %}
 
 {% block content %}
+{% load static %}
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
 <div class="text-center p-10">
     <h1 class="font-bold text-4xl mb-4">Petcare Products:</h1>
-    <p class="text-xl"></p>
 </div>
 
-<!-- Grid Section -->
-<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mt-10 mb-5">
+<form class="d-flex justify-center gap-4 mb-5" role="search" method="GET">
+    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
+    <input class="form-control me-2" type="number" placeholder="Min Price" aria-label="Min Price" name="min_price">
+    <input class="form-control me-2" type="number" placeholder="Max Price" aria-label="Max Price" name="max_price">
+    <select name="category" class="form-control">
+        <option value="">Accessories Type</option>
+        <option value="Food">Food</option>
+        <option value="Toy">Toy</option>
+        <option value="Tools">Tools</option>
+    </select>
+    <button class="btn btn-outline-success" type="submit">Search</button>
+</form>
 
+
+
+
+
+<style>
+/* Button Styles */
+.add-to-cart-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    display: inline-block;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.add-to-cart-button:hover {
+    background-color: #0056b3;
+}
+
+/* Header and View Cart Button Styles */
+.header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
+}
+
+.view-cart-wrapper {
+    margin-bottom: 5px;
+}
+
+.view-cart-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.view-cart-button:hover {
+    background-color: #0056b3;
+}
+
+
+
+/* Professional Dropdown CSS */
+.pro-dropdown {
+  position: relative;
+  display: inline-block;
+  left: 20px;
+}
+
+.pro-dropdown-btn {
+  background-color: #34495e;
+  color: white;
+  padding: 10px 25px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  outline: none;
+}
+
+.pro-dropdown-content {
+  display: none;
+  position: absolute;
+  left: 20px;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.pro-dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.3s ease;
+}
+
+.pro-dropdown-content a:hover {
+  background-color: #34495e;
+  color: white;
+}
+
+.pro-dropdown:hover .pro-dropdown-content {
+  display: block;
+}
+
+.pro-dropdown-btn:after {
+  content: '▼';
+  font-size: 13px;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Add this to your existing stylesheet without altering the rest of your styles */
+
+
+</style>
+
+
+<!-- Professional Dropdown HTML -->
+<div class="pro-dropdown">
+  <button class="pro-dropdown-btn">Select Items per Page</button>
+  <div class="pro-dropdown-content">
+    <a href="?per_page=3">3 per page</a>
+    <a href="?per_page=6">6 per page</a>
+    <a href="?per_page=9">9 per page</a>
+    <a href="?per_page=12">12 per page</a>
+  </div>
+</div>
+
+<!--
+<div class="dropdown show">
+  <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Items per page
+  </a>
+
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+    <a class="dropdown-item" href="?per_page=3"> 3 per page</a>
+    <a class="dropdown-item" href="?per_page=6"> 6 per page</a>
+    <a class="dropdown-item" href="?per_page=9"> 9 per page</a>
+  </div>
+</div>
+-->
+
+<!-- Header Section with View Cart Button -->
+<header class="header">
+    <div class="view-cart-wrapper">
+        <a href="{% url 'baseapp:cart' %}" class="view-cart-button">View Cart</a>
+    </div>
+</header>
+
+<!-- Grid Section -->
+<section class="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center gap-y-10 gap-x-6 mt-5">
     {% for product in products %}
     <!-- Product Card -->
-    <div class="w-72 bg-white shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
-        <a href="">
-            {% if product.picture %}
-            <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
-            {% else %}
-            <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-80 w-72 object-cover rounded-t-xl" />
-            {% endif %}
-            <div class="px-4 py-3">
-                <h3 class="text-lg font-bold text-black truncate capitalize">{{ product.title }}</h3>
-                <p class="text-gray-600 text-sm my-1">{{ product.description|truncatewords:15 }}</p>
-                <div class="flex justify-between items-center">
-                    <span class="text-lg font-semibold text-black">${{ product.price }}</span>
-                    <span class="text-gray-500 text-xs">{{ product.stock }} in stock</span>
-                </div>
+    <div class="w-72 bg-white shadow-lg border border-gray-200 rounded-lg overflow-hidden">
+        <!-- Image -->
+        {% if product.picture %}
+        <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-60 w-full object-cover" />
+        {% else %}
+        <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-60 w-full object-cover" />
+        {% endif %}
+        <!-- Details -->
+        <div class="p-4">
+            <a href="{% url 'baseapp:product_detail' product.pk %}" class="text-lg font-bold truncate">{{ product.title }}</a>
+            <div class="flex justify-between items-center mt-2">
+                <span class="text-blue-500 font-bold">${{ product.price }}</span>
+                <form action="{% url 'baseapp:add_to_cart' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1" min="1">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Add to Cart
+                    </button>
+                </form>
             </div>
-        </a>
+        </div>
     </div>
-    <!-- End Product Card -->
     {% empty %}
-    <!-- <div>No accessories found.</div> -->
+    <div>No accessories found.</div>
+    {% endfor %}
+</section>
+
+<!-- Pagination HTML -->
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <!-- First and Previous Page Links -->
+    {% if products.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1&per_page={{ per_page }}" aria-label="First">
+          <span aria-hidden="true">««</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ products.previous_page_number }}&per_page={{ per_page }}" aria-label="Previous">
+          <span aria-hidden="true">«</span>
+        </a>
+      </li>
+    {% endif %}
+
+    <!-- Page Number Links -->
+    {% for num in products.paginator.page_range %}
+      {% if products.number == num %}
+        <li class="page-item active"><a class="page-link" href="?page={{ num }}&per_page={{ per_page }}">{{ num }}</a></li>
+      {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ num }}&per_page={{ per_page }}">{{ num }}</a></li>
+      {% endif %}
     {% endfor %}
 
-</section>
+    <!-- Next and Last Page Links -->
+    {% if products.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ products.next_page_number }}&per_page={{ per_page }}" aria-label="Next">
+          <span aria-hidden="true">»</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ products.paginator.num_pages }}&per_page={{ per_page }}" aria-label="Last">
+          <span aria-hidden="true">»»</span>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+
+<style>
+
+/* Pagination CSS */
+.pagination {
+  display: flex;
+  padding-left: 0;
+  list-style: none;
+  border-radius: 0.25rem;
+}
+
+.page-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #007bff;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+}
+
+.page-link:hover {
+  color: #0056b3;
+  text-decoration: none;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: auto;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-link {
+    transition: none;
+  }
+}
+
+
+/* Order Status Button CSS */
+.order-status-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.order-status-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+</style>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 {% endblock content %}

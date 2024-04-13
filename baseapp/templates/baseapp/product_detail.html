@@ -1,0 +1,164 @@
+{% extends 'main.html' %}
+
+{% block title %}On Sale{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<style>
+/* Container Styles */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+/* Product Image Styles */
+.product-image-wrapper {
+    flex: 0.35;
+    max-width: 50%;
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Product Details Styles */
+.product-details {
+    flex: 1;
+    max-width: 50%;
+    padding-left: 30px;
+}
+
+.product-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.product-description {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    color: #e44d26;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.price-value {
+    font-size: 1.8rem;
+}
+
+/* Stock Display Styles */
+.stock-display {
+    font-size: 1rem;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+/* Button Styles */
+.add-to-cart-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    display: inline-block;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.add-to-cart-button:hover {
+    background-color: #0056b3;
+}
+
+/* Header and View Cart Button Styles */
+.header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
+}
+
+.view-cart-wrapper {
+    margin-bottom: 20px;
+}
+
+.view-cart-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.view-cart-button:hover {
+    background-color: #0056b3;
+}
+
+</style>
+
+
+
+
+<!-- Header Section with View Cart Button -->
+<header class="header">
+    <div class="view-cart-wrapper">
+        <a href="{% url 'baseapp:cart' %}" class="view-cart-button">View Cart</a>
+    </div>
+</header>
+
+
+
+<div class="container">
+    <!-- Product Image -->
+    <div class="product-image-wrapper">
+        {% if product.picture %}
+        <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="product-image" />
+        {% else %}
+        <img src="https://via.placeholder.com/288x400" alt="No image available" class="product-image" />
+        {% endif %}
+    </div>
+
+    <!-- Product Details -->
+    <div class="product-details">
+        <h2 class="product-title">{{ product.title }}</h2><h7>Type: ({{ product.type }})</h7>
+        <br>
+        <br>
+        <p class="product-description">{{ product.description }}</p>
+        <p class="product-price">Price: <span class="price-value">${{ product.price }}</span></p>
+
+        <!-- Stock Display -->
+        <p class="stock-display">
+            {% if product.stock > 0 %}
+            In Stock: {{ product.stock }}
+            {% else %}
+            Out of Stock
+            {% endif %}
+        </p>
+
+        <!-- Add to Cart Form -->
+        <form action="{% url 'baseapp:add_to_cart' product.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1" min="1">
+            <button type="submit" class="add-to-cart-button">
+                Add to Cart
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

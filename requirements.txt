@@ -9,3 +9,4 @@ django_celery_results==2.5.1
 django_celery_beat==2.6.0
 requests==2.31.0
 stripe==8.10.0
+channels_redis==4.2.0

@@ -1,143 +1,116 @@
 <!doctype html>
-
 <html lang="en">
-
 {% load static %}
 <head>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/5135d630a7.js" crossorigin="anonymous"></script>
-    <style>
-        .submenu {
-            color: black;
-            text-decoration: none;
-        }
-        .submenu:hover {
-            color: rgb(110, 139, 149);
-            text-decoration: none;
-        }
-        .navbar {
-            position: relative !important;
-            z-index: 1050 !important;
-        }
-
-        .dropdown-menu {
-            z-index: 1060 !important;
-        }
-
-        .navbar, .container, .d-flex {
-            overflow: visible !important;
-        }
-        .notification {
-            background-color: #fdde97;
-            color: white;
-            text-decoration: none;
-            padding: 4px 24px;
-            margin-right: 20px;
-            margin-left: 20px;
-            position: relative;
-            display: inline-block;
-            border-radius: 2px;
-            font-size: 20px;
-        }
-
-        .notification:hover {
-            background: #0b5ed7;
-            color: #fff;
-        }
-
-        .notification .badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            padding: 8px 8px;
-            border-radius: 50%;
-            background: red;
-            color: white;
-        }
-
-        .notification-section .dropdown-toggle::after {
-            content: none;
-        }
-
-        .dropdown-toggle::after {
-            color: #fff;
-        }
-
-        #notifications-dropdown li {
-            max-width: 500px;
-            word-wrap: break-word;
-            display: inline-block;
-            white-space: normal;
-        }
-
-        #notifications-dropdown.dropdown-menu {
-            width: 15rem;
-        }
-
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/5135d630a7.js" crossorigin="anonymous"></script>
+  <style>
+      .dropdown-menu {
+          z-index: 2000 !important; /* Ensure it's on top of other elements */
+          display: block;
+          visibility: hidden;
+      }
+      .dropdown-menu.show {
+          visibility: visible;
+      }
+      .submenu {
+          color: black;
+          text-decoration: none;
+      }
+      .submenu:hover {
+          color: rgb(110, 139, 149);
+          text-decoration: none;
+      }
+      .notification {
+          background-color: transparent; /* Changed for icon */
+          color: white;
+          padding: 4px;
+          margin: 0 10px;
+          position: relative;
+          display: inline-block;
+          border-radius: 2px;
+          font-size: 20px;
+      }
+      .notification:hover {
+          color: #0b5ed7;
+      }
+      .notification .badge {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          padding: 5px 10px;
+          border-radius: 50%;
+          background: red;
+          color: white;
+      }
+      .notification .fa-bell {
+        color: black; /* Change bell icon color to black */
+      }
+  </style>
 </head>
 <body style="background-color: rgb(247, 239, 215)">
-  <!-- ===============================================-->
-  <!--    Main Content-->
-  <!-- ===============================================-->
-  <main class="main" id="top">
-    <div class="bg-white">
-      <div class="bg-white p-1 p-lg-2">
-        <div class="container">
-          {% if request.user.is_authenticated %}
-          <div class="d-flex justify-content-end align-items-center">
-            <a
-              class="ms-2 ms-md-3 submenu"
-              href="{% url 'baseapp:add_animal' %}"
-              ><span class="uil uil-bill"></span
-              ><span class="ms-1 fs-10 fs-sm-9">Add Animal</span></a>
-
-            <li class="nav-item dropdown notification-section">
-              <a href="#" class="notification dropdown-toggle" id="navbarDropdown" role="button"
-                  data-bs-toggle="dropdown" aria-expanded="true">
-                  <span><i class='fa fa-bell'></i></span>
+  <div class="container">
+      {% if request.user.is_authenticated %}
+      <div class="d-flex justify-content-end align-items-center">
+        
+          <a class="submenu" href="{% url 'baseapp:order_history' request.user.username %}">
+              <span class="uil uil-bill"></span>
+              <span>Orders</span>
+          </a>
+          <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:upload_history' request.user.username %}">
+                <span class="uil uil-file-heart"></span>
+                <span class="ms-1 fs-10 fs-sm-9">Uploads</span>
+          </a>
+          <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:cart' %}"
+                ><span class="uil uil-shopping-cart"></span
+                ><span class="ms-1 fs-10 fs-sm-9">Cart</span>
+          </a>
+          
+          <!-- Notification Dropdown -->
+          <div class="dropdown">
+            <a class="notification" href="#" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class='fas fa-bell'></i> <!-- Bell icon -->
+                <span class="badge">{{ unread_count }}</span> <!-- Dynamically rendered -->
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
+                {% for i in notifications %}
+                <li><a class="dropdown-item" href="#">{{ i.message }}</a></li>
+                {% endfor %}
+            </ul>
+          </div>
+          
+          <!-- Account Dropdown -->
+          <div class="dropdown">
+              <a class="submenu dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-expanded="false">
+                  <span class="uil uil-user-circle"></span>
+                  <span>Account</span>
               </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown" id="notifications-dropdown"
-                  data-popper-placement="bottom-end"
-                  style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(-70px, 42px, 0px);">
-
-                  {% for i in notifications %}
-                  <li class="dropdown-item">{{i.message}}</li>
-                  <hr class="dropdown-divider">
-                  {% endfor %}
-                  {% comment %} <li class='dropdown-item'>Hello</li>
-                  <hr class="dropdown-divider"> {% endcomment %}
-                  
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
+                  <li><a class="dropdown-item" href="{% url 'baseapp:user_profile' request.user.username %}">My Profile</a></li>
+                  <li><a class="dropdown-item" href="{% url 'baseapp:change_password' %}">Change Password</a></li>
+                  <li><a class="dropdown-item" href="{% url 'baseapp:upload_history' request.user.username %}">Upload History</a></li>
+                  <li><a class="dropdown-item" href="{% url 'baseapp:signout' %}">Logout</a></li>
               </ul>
-          </li>
-
-
-            <div class="dropdown">
-                <a href="#" class="ms-2 ms-md-3 submenu dropdown-toggle" id="navbarDropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                  <span class="uil uil-user-circle"></span><span class="ms-1 fs-10 fs-sm-9">Account</span>
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <a class="dropdown-item" href="{% url 'baseapp:user_profile' request.user.username %}">My Profile</a>
-                  <a class="dropdown-item" href="{% url 'baseapp:change_password' %}">Change Password</a>
-                  <a class="dropdown-item" href="{% url 'baseapp:upload_history' request.user.username %}">Upload History</a>
-                  <a class="dropdown-item" href="{% url 'baseapp:signout' %}">Logout</a>
-                </div>
-            </div>              
+          </div>
+        </div>              
             {% else %}
             <div class="d-flex justify-content-end align-items-center">
-              <a class="ms-2 ms-md-3 submenu" href="#!"
+              <!-- <a class="ms-2 ms-md-3 submenu" href="#!"
                 ><span class="uil uil-bill"></span
                 ><span class="ms-1 fs-10 fs-sm-9">sale</span></a
               ><a class="ms-2 ms-md-3 submenu" href="#!"
                 ><span class="uil uil-file-heart"></span
-                ><span class="ms-1 fs-10 fs-sm-9">wishlist</span></a
-              ><a class="ms-2 ms-md-3 submenu" href="#!"
+                ><span class="ms-1 fs-10 fs-sm-9">wishlist</span></a> -->
+              <a class="ms-2 ms-md-3 submenu" href="#!"
                 ><span class="uil uil-shopping-cart"></span
-                ><span class="ms-1 fs-10 fs-sm-9">cart</span></a
-              ><a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:signin' %}"
+                ><span class="ms-1 fs-10 fs-sm-9">cart</span>
+              </a>
+              <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:signin' %}"
                 ><span class="uil uil-user-circle"></span
-                ><span class="ms-1 fs-10 fs-sm-9">Login/Sign Up</span></a
-              >
+                ><span class="ms-1 fs-10 fs-sm-9">Login/Sign Up</span>
+              </a>
               {% endif %}
             </div>
           </div>
@@ -201,28 +174,28 @@
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
-                        href="#about"
-                        title="about"
-                        >About</a
+                        href=""
+                        title="catalog"
+                        >Catalog</a
                       >
                     </li>
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
-                        href="{% url 'baseapp:animal_info' %}"
-                        title="facts"
-                        >Animal Facts</a
+                        href="{% url 'baseapp:know_before' %}"
+                        title="info"
+                        >Animal info</a
                       >
 
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
                         href="#review"
                         title="reviews"
                         >Reviews</a
                       >
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
@@ -238,59 +211,92 @@
           </nav>
     
           {{ room_name|json_script:"room-name" }}
-          <script>
-              const roomName = JSON.parse(document.getElementById('room-name').textContent);
-      
-              const NotificationSocket = new WebSocket(
-                  'ws://'
-                  + window.location.host
-                  + '/ws/notification/'
-                  + roomName
-                  + '/'
-              );
-      
-              NotificationSocket.onmessage = function(e) {
-                  const data = JSON.parse(e.data);
-                  console.log(data);
-                  document.getElementById("notifications-dropdown").innerHTML = "<li class='dropdown-item'>" + data + "</li><hr class='dropdown-divider'>"+ document.getElementById("notifications-dropdown").innerHTML;
-                  document.getElementById("notification-badge").innerHTML = parseInt(document.getElementById("notification-badge").innerHTML) + 1;
-              };
-      
-              NotificationSocket.onclose = function(e) {
-                  console.error('Chat socket closed unexpectedly');
-              };
-      
 
-          </script>
         </div>
       </div>
     </div>
   </main>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dropdown = document.querySelector('.dropdown');
-        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-    
-        // Toggle dropdown display on click
-        dropdown.addEventListener('click', function(event) {
-            const isExpanded = dropdownMenu.classList.contains('show');
-            if (!isExpanded) {
-                dropdownMenu.classList.add('show');
-            } else {
-                dropdownMenu.classList.remove('show');
-            }
-            event.stopPropagation(); // Prevent click from immediately propagating to document
-        });
-    
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!dropdown.contains(event.target)) {
-                dropdownMenu.classList.remove('show');
-            }
-        });
-    });
-</script>
 </body>
 
+<script>
+  var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+  var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+    return new bootstrap.Dropdown(dropdownToggleEl);
+  });
+
+  // This ensures dropdowns close on clicking outside
+  window.onclick = function(event) {
+    if (!event.target.matches('.dropdown-toggle')) {
+      var dropdowns = document.getElementsByClassName("dropdown-menu");
+      for (var i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show')) {
+          openDropdown.classList.remove('show');
+        }
+      }
+    }
+  }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Functionality to toggle dropdowns and update notification badge accurately
+      const dropdownToggles = document.querySelectorAll('.dropdown-toggle, .notification');
+      dropdownToggles.forEach(dropdownToggle => {
+          dropdownToggle.addEventListener('click', function(event) {
+              event.stopPropagation();
+              const dropdownMenu = this.nextElementSibling;
+              const isOpen = dropdownMenu.classList.contains('show');
+
+              // Close all dropdowns
+              document.querySelectorAll('.dropdown .dropdown-menu').forEach(menu => {
+                  menu.classList.remove('show');
+              });
+
+              // Toggle this dropdown if it was not already open
+              if (!isOpen) {
+                  dropdownMenu.classList.add('show');
+              }
+
+              // If this is the notification dropdown and it's being opened, reset the badge
+              if (this.classList.contains('notification') && !isOpen) {
+                  this.querySelector('.badge').textContent = '0';
+              }
+          });
+      });
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', () => {
+          document.querySelectorAll('.dropdown .dropdown-menu').forEach(menu => {
+              menu.classList.remove('show');
+          });
+      });
+  });
+</script>  
+
+<script>
+  const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+  const NotificationSocket = new WebSocket(
+      'ws://'
+      + window.location.host
+      + '/ws/notification/'
+      + roomName
+      + '/'
+  );
+
+  NotificationSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      console.log(data);
+      document.getElementById("notifications-dropdown").innerHTML = "<li class='dropdown-item'>" + data + "</li><hr class='dropdown-divider'>"+ document.getElementById("notifications-dropdown").innerHTML;
+      document.getElementById("notification-badge").innerHTML = parseInt(document.getElementById("notification-badge").innerHTML) + 1;
+  };
+
+  NotificationSocket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+  };
+
+
+</script>
 
 </html>

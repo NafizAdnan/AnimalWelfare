@@ -1,0 +1,184 @@
+{% extends 'main.html' %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  .order-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 25px; /* Increased vertical gaps */
+    margin-bottom: 20px;
+  }
+  .order-table th, .order-table td {
+    border: none;
+    padding: 15px;
+    text-align: left;
+    font-size: 1.2em; /* Increased font size */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtle shadow effect */
+  }
+  .order-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.3em; /* Slightly larger font size for headers */
+  }
+  .payment-status-paid {
+    color: #28a745; /* Green color for paid status */
+    font-weight: bold; /* Highlighting the payment status */
+  }
+  .payment-status-not-paid {
+    color: #c34c58; /* Red color for not paid status */
+    font-weight: bold; /* Highlighting the payment status */
+    font-size: medium;
+  }
+  h2 {
+    color: #333;
+    text-align: center;
+    margin-top: 20px;
+    font-size: larger;
+  }
+
+  .order-summary {
+    font-size: 0.9em; /* Smaller font size for summary */
+  }
+  .order-summary strong {
+    font-weight: bold; /* Make the label bold */
+  }
+
+  .clean-cut-btn {
+    background: linear-gradient(145deg, #cacaca, #f0f0f0); /* Subtle gradient for depth */
+    color: #333; /* Dark text for contrast */
+    padding: 1px 5px; /* Comfortable padding */
+    border: none; /* No border for a clean look */
+    border-radius: 6px; /* Slightly rounded corners for a modern touch */
+    font-size: 0.7em; /* Standard font size */
+    font-weight: bold; /* Bold text */
+    text-transform: uppercase; /* Uppercase text for a modern feel */
+    cursor: pointer; /* Pointer cursor on hover */
+    box-shadow: 5px 5px 15px #a8a8a8, -5px -5px 15px #ffffff; /* Dual shadow for a 3D effect */
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+  }
+
+  .clean-cut-btn:hover {
+      background: linear-gradient(145deg, #f0f0f0, #cacaca); /* Inverted gradient on hover */
+      box-shadow: 10px 10px 20px #a8a8a8, -10px -10px 20px #ffffff; /* Enhanced shadow on hover */
+      transform: translateY(-2px); /* Slight raise on hover */
+  }
+
+  .link {
+    color: #007bff; /* Blue color for links */
+    text-decoration: none; /* No underline for links */
+  }
+  .link :hover {
+    text-decoration: underline; /* Underline on hover */
+  }
+  .my-modal-position {
+    top: 150px;
+    transform: translate(-50%, -50%);
+  }
+
+</style>
+
+{% endblock extra_css %}
+
+{% block content %}
+
+<h2>Order History</h2>
+<table class="order-table">
+  <tr>
+    <th>Order ID</th>
+    <!--<th>User</th>-->
+    <th>Product</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>City</th>
+    <th>State</th>
+    <th>Address</th>
+    <th>Payment Status</th>
+    <th>Items Ordered</th>
+    <th>Total Amount</th>
+    <th>Delivery</th>
+  </tr>
+  {% for order in orders %}
+  <tr>
+    <td class="link"> <a href="{% url 'baseapp:order_status' order.id %}"> {{ order.id }} </a> </td>
+    <!--<td>{ { order.user.username }}</td>-->
+    <td>{{ order.name }}</td>
+    <td>{{ order.email }}</td>
+    <td>{{ order.phone }}</td>
+    <td>{{ order.city }}</td>
+    <td>{{ order.state }}</td>
+    <td>{{ order.address }}</td>
+    <td class="{{ order.payment_status|yesno:'payment-status-paid,payment-status-not-paid' }}">
+        {{ order.payment_status|yesno:"Paid,Not Paid" }}
+        {% if not order.payment_status %}
+          {% if order.payment == 'cod' %}
+          <br>
+            <span class="text-black">(COD)</span>
+          {% else %}
+          <!-- Pay Now button only for unpaid orders -->
+          <form action="{% url 'baseapp:order_status' order.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="clean-cut-btn">Pay Now</button>
+          </form>
+          {% endif %}
+        {% endif %}
+    </td>
+    <td class="order-summary"><strong>Items:</strong> <br>{{ order.items_summary }}</td>
+    <td class="order-summary"><strong>Total:</strong> ${{ order.total_cost }}</td>
+    {% if order.delivery == 'pending' %}
+    <td class="order-summary">
+      <!-- Trigger/Open The Modal -->
+      <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#cancelOrderModal" data-order-id="{{ order.id }}">
+        Cancel Order
+      </button>
+      <!-- Cancel Order Modal -->
+      <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog my-modal-position">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="cancelOrderModalLabel">Confirm Cancel Order</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to cancel this order?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <a href="{% url 'baseapp:cancel_order' order.id %}" class="btn btn-danger">Yes, Cancel Order</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </td>
+    {% else %}
+    <td class="order-summary">{{ order.delivery }}</td>
+    {% endif %}
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Script to handle the modal behavior
+  $('#cancelOrderModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+  var orderId = button.data('order-id'); // Extract info from data-* attributes
+  // Update the link's href only if orderId is not empty
+  if(orderId) {
+    var url = `{% url 'baseapp:cancel_order' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', orderId);
+    $(this).find('.modal-footer a').attr('href', url);
+  }
+});
+</script>
+{% endblock %}

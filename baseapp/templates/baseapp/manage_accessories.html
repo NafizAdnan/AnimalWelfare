@@ -1,10 +1,8 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-<div class="container mx-auto px-4 sm:px-8 py-8 bg-gray-100">
+<div class="container mx-auto px-4 sm:px-8 py-4 bg-gray-100">
     <!-- Tabs/Navs -->
     <div class="mb-8 flex justify-between">
         <ul class="flex border-b">
@@ -19,7 +17,7 @@
     </div>
 
     <!-- Table Title -->
-    <h2 class="text-lg font-semibold mb-4 text-black">Pet Care Products</h2>
+    <h2 class="text-lg font-semibold mt-n6 mb-4 text-black text-center">Pet Care Products</h2>
 
     <!-- Accessories Table -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -59,7 +57,7 @@
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteAccessoryModal" tabindex="-1" aria-labelledby="deleteAccessoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog my-modal-position">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteAccessoryModalLabel">Confirm Deletion</h5>

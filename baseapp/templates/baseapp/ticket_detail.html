@@ -31,7 +31,7 @@
         {% csrf_token %}
         <textarea name="body" rows="3" class="w-full p-2 border rounded text-black bg-gray-50" placeholder="Add a reply..."></textarea>
         <button type="submit" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Post Message
+            Send
         </button>
     </form>
     <form action="{% url 'baseapp:close_ticket' ticket_id=ticket.id %}" method="post" class="mt-4">

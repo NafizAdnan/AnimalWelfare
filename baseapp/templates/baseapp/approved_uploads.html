@@ -1,8 +1,6 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
 <div class="container mx-auto px-4 sm:px-8 py-8 bg-gray-100">
     <!-- Tabs/Navs -->
@@ -75,7 +73,7 @@
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog my-modal-position">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
@@ -107,7 +105,8 @@
         var animalId = button.data('id');
         var animalName = button.data('name');
         var modal = $(this);
-        modal.find('.modal-body #delete
+        modal.find('.modal-body #deleteAnimalName').text(animalName);
+        modal.find('.modal-footer #modalAnimalId').val(animalId);
     // Set form's action. Replace '999999' with your Django delete view's URL name and ensure the correct ID placeholder
     var deleteFormAction = "{% url 'baseapp:delete_animal' 999999 %}".replace('999999', animalId);
     modal.find("#deleteAnimalForm").attr("action", deleteFormAction);

@@ -68,7 +68,7 @@ urlpatterns = [
      path('cart/', views.cart_view, name='cart'),
      path('product/<int:pk>/', views.product_detail, name='product_detail'),
      path('place_order/', views.place_order, name='place_order'),
-     path('order_status/<str:order_id>/', views.order_status, name='order_status'),
+     path('order-status/<str:order_id>/', views.order_status, name='order_status'),
      path('create_stripe_session/<order_id>/', views.create_stripe_session, name='create_stripe_session'),
      path('payment_success/<order_id>/', views.payment_success, name='payment_success'),
      path('payment_cancel/<order_id>/', views.payment_cancel, name='payment_cancel'),
@@ -78,6 +78,8 @@ urlpatterns = [
      path('know_before_cat/', views.know_before_cat, name='know_before_cat'),
      path('know_before_dog/', views.know_before_dog, name='know_before_dog'),
      path('animal_daycare/<int:id>/', views.animal_detail_2, name='animal_detail_2'),
+     path('order-history/<str:username>', views.order_history, name='order_history'),
+     path('cancel-order/<str:order_id>', views.cancel_order, name='cancel_order'),
      
 ]
 

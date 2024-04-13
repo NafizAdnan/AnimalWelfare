@@ -1,9 +1,7 @@
 import stripe
-from django.contrib.messages.storage import session
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.template import RequestContext
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib import messages
@@ -12,7 +10,6 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import csrf_exempt
-
 from AnimalWelfare import settings
 from . tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
@@ -23,12 +20,9 @@ from pprint import pprint
 from django.urls import reverse
 from .utils import *
 import os
-from shutil import copyfile, move
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-import json
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 
@@ -38,6 +32,13 @@ def home(request):
     if request.user.is_authenticated:
         return redirect('baseapp:user_dashboard')
     return render(request, 'baseapp/index.html',{'room_name':"broadcast"})
+
+# @require_POST
+# def mark_notifications_read(request):
+#     if request.user.is_authenticated:
+#         BroadcastNotification.objects.filter(user=request.user, read=False).update(read=True)
+#         return JsonResponse({'success': True})
+#     return JsonResponse({'success': False}, status=401)
 
 def signup(request):
 
@@ -665,16 +666,16 @@ def add_to_cart(request, accessory_id):
             cart_item.quantity += 1
             cart_item.save()
 
-        return redirect('baseapp:products_for_sale')
+        return redirect('baseapp:cart')
 
-@login_required
+
 def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     cart_item.delete()
     messages.success(request, "Item removed from cart.")
     return redirect('baseapp:cart')
 
-@login_required
+
 def adjust_cart_item(request, item_id, action):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     if action == "add":
@@ -689,7 +690,7 @@ def adjust_cart_item(request, item_id, action):
     messages.success(request, "Cart updated.")
     return redirect('baseapp:cart')
 
-@login_required
+
 def cart_view(request):
     print(request.user)
     try:
@@ -710,10 +711,7 @@ def cart_view(request):
 
 
 def product_detail(request, pk):
-    # Retrieve the specific product based on the primary key (pk)
     product = get_object_or_404(Accessories, pk=pk)
-
-    # You can add any additional logic or data processing here if needed
 
     return render(request, 'baseapp/product_detail.html', {'product': product})
 
@@ -724,12 +722,10 @@ def place_order(request):
         new_order = Order()
         new_order.order_id = generate_random_identifier()  # Generate a random Order ID
         new_order.user = request.user
-        print(request.POST.get('name'), '########################################################3')
         cart_items = CartItem.objects.filter(cart__user=request.user)
         new_order.items_summary = "\n".join(
             f"{item.quantity}x {item.accessory.title} - ${item.total_price}" for item in cart_items)
         new_order.total_cost = sum(item.total_price for item in cart_items)
-        print(request.POST.get('name'), '########################################################3')
         new_order.name = request.POST.get('name')
         new_order.email = request.POST.get('email')
         new_order.phone = request.POST.get('phone')
@@ -737,6 +733,7 @@ def place_order(request):
         new_order.state = request.POST.get('state')
         new_order.address = request.POST.get('address')
         new_order.payment_status = False  # Payment status is initially False
+        new_order.payment = request.POST.get('payment')
         new_order.save()
         # Clear the user's cart
         CartItem.objects.filter(cart__user=request.user).delete()
@@ -750,26 +747,6 @@ def place_order(request):
 
         return render(request, 'baseapp/place_order.html', {'items': cart_items, 'total_price': total_price})
 
-@login_required
-def cart_view(request):
-    print(request.user)
-    try:
-        cart = Cart.objects.get(user=request.user)
-        print(cart)
-        items = CartItem.objects.filter(cart=cart)
-        total_price = sum(item.accessory.price * item.quantity for item in items)
-    except Cart.DoesNotExist:
-        print("Cart does not exist")
-        items = []
-        total_price = 0
-
-    context = {
-        'items': items,
-        'total_price': total_price
-    }
-    return render(request, 'baseapp/cart.html', context)
-
-
 def order_history(request, username):
     #orders = Order.objects.filter(user__username=username)  # Ensure you're filtering by the related user's username
     orders = Order.objects.filter(user__username=username).order_by('-created_at')
@@ -781,6 +758,11 @@ def order_status(request, order_id):
     # Pass the order to the template
     return render(request, 'baseapp/order_status.html', {'order': order})
     
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.delete()
+    messages.success(request, "Order Cancelled Successfully!!")
+    return redirect('baseapp:order_history', username=request.user.username)
 
 #STRIPE
 # views.py
@@ -833,8 +815,6 @@ def create_stripe_session(request, order_id):
         )
         return redirect(session.url, code=303)
     else:
-        print('NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-        print('**********************************************')
         return redirect('baseapp:order_status', order_id=order.id)
 
 @csrf_exempt
