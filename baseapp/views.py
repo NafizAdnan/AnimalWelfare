@@ -117,7 +117,7 @@ def signup(request):
 
     return render(request, 'baseapp/signup.html')
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def update_profile(request):
     user = request.user
     if request.method == "POST":
@@ -143,7 +143,7 @@ def update_profile(request):
     
     return render(request, 'baseapp/update_profile.html', {'user': user})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def change_password(request):
     if request.method == "POST":
         user = request.user
@@ -238,7 +238,7 @@ def account_activate(request,newUser):
     return redirect('baseapp:home')
 
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def addAnimal(request):
     if request.method == "POST":
         print(request.POST)
@@ -301,7 +301,7 @@ def is_animal_in_image(picture, path):
     return False
 
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def updateAnimal(request, id):
     animal = get_object_or_404(Animal, id=id)
     if request.method == "POST":
@@ -315,7 +315,7 @@ def updateAnimal(request, id):
         animal.available_for = request.POST.get('available_for', animal.available_for)
 
         picture = request.FILES.get('picture')
-        if picture != animal.picture:
+        if picture and picture != animal.picture:
             os.makedirs(settings.TEMP_UPLOAD_DIR, exist_ok=True)
             temp_path = os.path.join(settings.TEMP_UPLOAD_DIR, picture.name)
             if is_animal_in_image(picture, temp_path):
@@ -335,7 +335,7 @@ def updateAnimal(request, id):
 
     return render(request, 'baseapp/update_animal.html', {'animal': animal})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def deleteAnimal(request, id):
     animal = Animal.objects.get(id=id)
     animal.delete()
@@ -349,12 +349,12 @@ def animalList(request):
     return render(request, 'baseapp/animal_list.html', {'animals':animals})
 
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def userProfile(request, username):
     user = User.objects.get(username=username)
     return render(request, 'baseapp/user_profile.html', {'user':user})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def uploadHistory(request, username):
     user = User.objects.get(username=username)
     animals = Animal.objects.filter(user=user)
@@ -363,27 +363,27 @@ def uploadHistory(request, username):
 def is_admin(user):
     return user.is_active and (user.is_staff or user.is_superuser or user.is_admin)
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def adminDashboard(request):
     return render(request, 'baseapp/admin_dashboard.html',{'room_name':"broadcast"})
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def manageAnimals(request):
     animals = Animal.objects.all()
     pending = animals.filter(approved=False)
     return render(request, 'baseapp/manage_animals.html', {'pending':pending})
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def approved_uploads(request):
     animals = Animal.objects.filter(approved=True)
     print(animals)
     return render(request, 'baseapp/approved_uploads.html', {'animals':animals})
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def approveAnimal(request, id):
     animal = Animal.objects.get(id=id)
     if request.method == "POST":
@@ -393,13 +393,13 @@ def approveAnimal(request, id):
         return redirect('baseapp:approved_uploads')
     return redirect('baseapp:manage_animals')
 
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def manageAccessories(request):
     accessories = Accessories.objects.all()
     return render(request, 'baseapp/manage_accessories.html', {'accessories':accessories})
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def addAccessory(request):
     if request.method == "POST":
         title = request.POST['title']
@@ -418,8 +418,8 @@ def addAccessory(request):
 
     return render(request, 'baseapp/add_accessory.html')
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def updateAccessory(request, id):
     accessory = Accessories.objects.get(id=id)
     if request.method == "POST":
@@ -444,8 +444,8 @@ def updateAccessory(request, id):
 
     return render(request, 'baseapp/update_accessory.html', {'accessory':accessory})
 
-@login_required(login_url='signin')
-@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+@login_required(login_url='baseapp:signin')
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
 def deleteAccessory(request, id):
     accessory = Accessories.objects.get(id=id)
     accessory.delete()
@@ -456,25 +456,21 @@ def accessoriesList(request):
     accessories = Accessories.objects.all()
     return render(request, 'baseapp/accessories_list.html', {'accessories':accessories})
 
-def viewProduct(request, id):
-    product = Accessories.objects.get(id=id)
-    return render(request, 'baseapp/view_product.html', {'product':product})
-
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def userDashboard(request):
     return render(request, 'baseapp/user_dashboard.html',{'room_name':"broadcast"})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def animalsForAdoption(request):
     animals = Animal.objects.filter(available_for='Adoption', approved=True)
     return render(request, 'baseapp/animals_for_adoption.html', {'animals':animals})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def animalsForDaycare(request):
     animals = Animal.objects.filter(available_for='Daycare', approved=True)
     return render(request, 'baseapp/animal_for_daycare.html', {'animals':animals})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def create_ticket(request):
     if request.method == 'POST':
         title = request.POST.get('title', '')
@@ -488,13 +484,13 @@ def create_ticket(request):
 
     return render(request, 'baseapp/create_ticket.html')
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def ticket_detail(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     messages = ticket.messages.all()
     return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket, 'inbox': messages})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def add_message(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     if request.method == 'POST':
@@ -504,7 +500,7 @@ def add_message(request, ticket_id):
             return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
     return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def list_tickets(request):
     if request.user.is_superuser:
         tickets = Ticket.objects.all()
@@ -512,7 +508,7 @@ def list_tickets(request):
         tickets = Ticket.objects.filter(user=request.user)
     return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 @user_passes_test(lambda u: u.is_superuser)
 def accept_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -521,7 +517,7 @@ def accept_ticket(request, ticket_id):
     messages.success(request, "Ticket Accepted!!")
     return redirect('baseapp:list_tickets')
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 @user_passes_test(lambda u: u.is_superuser)
 def decline_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -529,7 +525,7 @@ def decline_ticket(request, ticket_id):
     messages.info(request, "Ticket Declined!!")
     return redirect('baseapp:list_tickets')
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def close_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     ticket.status = 'closed'
@@ -537,7 +533,7 @@ def close_ticket(request, ticket_id):
     messages.warning(request, "Ticket Closed!!")
     return redirect('baseapp:list_tickets')
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 @user_passes_test(lambda u: u.is_superuser)
 def assign_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -549,59 +545,52 @@ def assign_ticket(request, ticket_id):
             return redirect('list_tickets')
     return render(request, 'baseapp/assign_ticket.html', {'ticket': ticket})
 
-@login_required(login_url='signin')
-def productsForSale(request):
-    products = Accessories.objects.all
-    return render(request, 'baseapp/products_for_sale.html', {'products':products})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def animal_detail(request, id):
-    if request.user.is_authenticated:  # Check if user is authenticated
-        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
-            print("User ID:", request.user.id)
-        else:
-            print("User has no 'id' attribute")
-    else:
-        print("User is not authenticated")
-
     animal = get_object_or_404(Animal, id=id)
+    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
-    return render(request, 'baseapp/animal_detail.html', {'animal': animal,'user': request.user})
-
-@login_required(login_url='signin')
-def animal_detail_2(request, id):
-    if request.user.is_authenticated:  # Check if user is authenticated
-        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
-            print("User ID:", request.user.id)
-        else:
-            print("User has no 'id' attribute")
-    else:
-        print("User is not authenticated")
-
+@login_required(login_url='baseapp:signin')
+def request_animal(request, id):
     animal = get_object_or_404(Animal, id=id)
+    if request.method == 'POST':
+        user = request.user
+        contact_number = request.POST.get('contact_number')
+        animal.requested_by = user
+        animal.r_contact = contact_number
+        animal.requested = True
+        animal.save()
+        AnimalRequest.objects.create(animal=animal, user=user, contact=contact_number)
+        messages.success(request, "Requested Successfully!!")
+        return redirect('baseapp:animal_detail', id=id)
+    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
-    return render(request, 'baseapp/animal_detail_2.html', {'animal': animal,'user': request.user})
-
-
-@login_required(login_url='signin')
-def request_adoption(request, id):
-    # Fetch the animal object by its ID
+@login_required(login_url='baseapp:signin')
+def cancel_request(request, id):
     animal = get_object_or_404(Animal, id=id)
-    # Logic to handle adoption request
-    # For example, you might want to notify the admin or perform other actions
-    messages.success(request, "Adoption Request Successful")
-    
-# Redirect to a success page or to the animal detail page
-    redirect('baseapp:animal_detail', id=id)
-    
-    return render(request, 'baseapp/animal_detail.html')
+    requested_by = animal.requested_by
+    animal.requested_by = None
+    animal.r_contact = None
+    animal.requested = False
+    animal.save()
+    AnimalRequest.objects.filter(animal=animal, user=requested_by).status = 'cancelled'
+    messages.success(request, "Request Cancelled!!")
+    return redirect('baseapp:animal_detail', id=id)
+
+@login_required(login_url='baseapp:signin')
+def complete_request(request, id):
+    animal = get_object_or_404(Animal, id=id)
+    animal.completed = True
+    animal.save()
+    AnimalRequest.objects.filter(animal=animal, user=animal.requested_by).status = 'completed'
+    messages.success(request, "Request Completed!!")
+    return redirect('baseapp:animal_detail', id=id)
 
 # views.py
 
 from django.db.models import Q
 
-
-@login_required(login_url='signin')
 def productsForSale(request):
     query = request.GET.get('q')
     sort_by = request.GET.get('sort_by')
@@ -850,7 +839,7 @@ def stripe_webhook(request):
 
 from django.shortcuts import render
 import requests
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def animal_info(request):
     # Initialize variables
     animal_name = ''
@@ -878,11 +867,11 @@ def animal_info(request):
     # Render the template with the form and API response
     return render(request, 'baseapp/animal_info.html', {'animal_name': animal_name, 'api_response': api_response})
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def know_before(request):
     return render(request, 'baseapp/know_before.html')
 
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def know_before_cat(request):
     if request.method == 'POST':
         name = request.POST.get('cat_name')  # Get the value of 'cat_name' from the form
@@ -898,7 +887,7 @@ def know_before_cat(request):
             # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_cat.html')
     
-@login_required(login_url='signin')
+@login_required(login_url='baseapp:signin')
 def know_before_dog(request):
     if request.method == 'POST':
         name = request.POST.get('dog_name')  # Get the value of 'cat_name' from the form

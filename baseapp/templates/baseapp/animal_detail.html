@@ -2,39 +2,254 @@
 
 {% block title %}{{ animal.title }} Detail{% endblock title %}
 
+{% block extra_css %}
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+    }
+    .animal-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        padding: 20px;
+    }
+    .left-column {
+        flex: 1;
+        max-width: 40%;
+        padding: 20px;
+        margin-left: 10%;
+        margin-top: 30px;
+    }
+    .center-column {
+        flex: 50%;
+        padding: 20px;
+        margin-left: 10%;
+    }
+    .right-column {
+        flex: 15%;
+        position: fixed;
+        right: 10px;
+        top: 30%;
+        transform: translateY(-50%);
+        padding: 20px;
+    }
+    .action-buttons {
+        position: fixed; /* Positioned fixed on the right side of the viewport */
+        top: 50%; /* Center vertically */
+        right: 10px; /* Distance from the right edge */
+        transform: translateY(-50%); /* Center align */
+    }
+    .action-button {
+        background-color: #4CAF50; /* Green background */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-bottom: 10px; /* Space between buttons */
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .action-button:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+    .rounded-full {
+        border-radius: 9999px;
+    }
+    .highlight-contact {
+        background-color: #e2e8f0; /* Light blue background */
+        color: #1a202c; /* Dark text color for contrast */
+        padding: 2px 2px;
+        border-radius: 2px;
+        display: inline-block;
+        cursor: pointer; /* Makes it appear clickable */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-weight: bold;
+    }
+    .highlight-contact:hover {
+        background-color: #cbd5e1; /* Darker on hover */
+    }
+
+    /* Slideshow Styles */
+    .slide-container {
+        position: relative;
+        width: fit-content;
+        margin: auto;
+        margin-top: 10px;
+    }
+    .slide {
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    .control-icon {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+    }
+    .control-icon:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    .prev {
+        left: -40px;
+    }
+    .next {
+        right: -40px;
+    }
+    /* Custom input field styles */
+    .custom-input {
+        width: 20%;
+        padding: 8px 12px; /* Comfortable padding */
+        border: 2px solid black;
+        border-radius: 4px; /* Rounded corners */
+        font-size: 16px;
+        margin-top: 12px;
+        align-self: center;
+    }
+    /* Custom button styles */
+    .small-button {
+        padding: 6px 10px; /* Smaller padding to reduce button size */
+        font-size: 14px; /* Smaller font size */
+        border-radius: 12px; /* Fully rounded corners for a pill-like effect */
+        display: inline-block; /* Ensure it doesn't stretch to full width */
+        width: auto; /* Only as wide as its content */
+        margin-top: 12px; /* Spacing from the element above */
+    }
+</style>
+{% endblock extra_css %}
+
 {% block content %}
-<div class="text-center p-10">
-    <h1 class="font-bold text-4xl mb-4 text-gray-500">Name: {{ animal.title }}</h1>
-    <p class="text-xl text-gray-500">Description: {{ animal.description }}</p>
-    <p class="text-gray-500">Age(months): {{ animal.age }}</p>
-    <p class="text-gray-500">Breed: {{ animal.breed }}</p>
-    <p class="text-gray-500">Location: {{ animal.location }}</p>
-    <p class="text-gray-500">Contact Info: {{ animal.contact }}</p>
-    {% if animal.vaccinated %}
-    <p class="text-gray-500">Vaccination Status: Vaccinated</p>
-    {% else %}
-    <p class="text-gray-500">Vaccination Status: Not Vaccinated</p>
-    {% endif %}
-
-    <!-- Display image -->
-    <div style="text-align: center;">
-        {% if animal.picture %}
-        <img src="{{ animal.picture.url }}" alt="{{ animal.title }} Image" class="mt-5">
-        {% endif %}
+<div class="animal-container">
+    <div class="left-column">
+        <!-- Slideshow for image and video -->
+        <div class="slide-container">
+            <div class="slide">
+                {% if animal.picture %}
+                <img src="{{ animal.picture.url }}" alt="{{ animal.title }} Image" class="slide-item">
+                {% endif %}
+                {% if animal.video %}
+                <video controls class="slide-item">
+                    <source src="{{ animal.video.url }}" type="video">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="control-icon prev" onclick="moveSlide(-1)"><i class="fas fa-chevron-left"></i></div>
+                <div class="control-icon next" onclick="moveSlide(1)"><i class="fas fa-chevron-right"></i></div>
+                {% endif %}
+            </div>
+        </div>
     </div>
-
-
-    <!-- Display video -->
-    {% if animal.video %}
-    <video controls class="mt-4">
-        <source src="{{ animal.video.url }}" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <div class="center-column">
+        <h1 class="font-bold text-4xl mb-1">{{ animal.title }}</h1>
+        <p class="text-xl">{{ animal.description }}</p>
+        <p>Age: {{ animal.age }} months</p>
+        <p>Breed: {{ animal.breed }}</p>
+        <p>Location: {{ animal.location }}</p>
+        <p>Vaccination Status: 
+            {% if animal.vaccinated %}
+            <span class="text-green-500">Vaccinated</span>
+            {% else %}
+            <span class="text-red-500">Not Vaccinated</span>
+            {% endif %}
+        </p>
+{% if not animal.completed %}
+    {% if not animal.requested %}
+        {% if request.user != animal.user %}
+        <!-- Initial Request Button -->
+        <button id="requestBtn" class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-3">Request for {{animal.available_for}}</button>
+        <!-- Hidden form to display after button click -->
+        <form id="requestForm" action="{% url 'baseapp:request_animal' animal.id %}" method="POST" style="display:none;">
+            {% csrf_token %}
+            <input type="text" name="contact_number" placeholder="Enter your contact number" required class="custom-input">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold small-button">Proceed</button>
+        </form>
+        {% endif %}
+    {% else %}
+        {% if request.user == animal.user %}
+        <p class="text-black-500 mt-2">{{animal.requested_by.username}} has requested for this animal.</p>
+        Please contact at
+        <div onclick="copyToClipboard('{{animal.r_contact}}')" class="highlight-contact mt-4">{{animal.r_contact}}</div>
+        <p>OR</p>
+        <button onclick="startLiveChat()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">Live Chat</button>
+        {% elif request.user == animal.requested_by %}
+        <p class="text-black-500 mt-2">You have requested for this animal.</p>
+        Please contact at
+        <div onclick="copyToClipboard('{{ animal.contact }}')" class="highlight-contact mt-4"> {{ animal.contact }} </div>
+        <p>OR</p> 
+        <button onclick="startLiveChat()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">Live Chat</button>
+        {% else %}
+        <p class="text-black-500 mt-2">This animal is already requested by someone else. Please check back later</p>
+        {% endif %}
     {% endif %}
+    </div>
+</div>
 
-    <form action="http://127.0.0.1:8000/chat/" method="POST">
+{% if animal.requested %}
+<div class="center-column action-buttons">
+    <form action="{% url 'baseapp:cancel_request' animal.id %}" method="POST">
         {% csrf_token %}
-        <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full mt-4">Live Chat for Adoption</button>
+        <button type="submit" class="action-button">Cancel Ongoing Request</button>
+    </form>
+    <form action="{% url 'baseapp:complete_request' animal.id %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="action-button">Mark as Completed</button>
     </form>
 </div>
+{% endif %}
+{% endif %}
 {% endblock content %}
+
+{% block extra_js %}
+<script>
+    // Toggle form visibility
+    document.getElementById('requestBtn').addEventListener('click', function() {
+        this.style.display = 'none';
+        document.getElementById('requestForm').style.display = 'block';
+    });
+</script>
+
+<script>
+    function startLiveChat() {
+        console.log('Starting live chat...');
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Contact info copied to clipboard!');
+        }, function(err) {
+            alert('Failed to copy: ', err);
+        });
+    }
+</script>
+
+<script>
+    var slideIndex = 0;
+    var slides = document.querySelectorAll('.slide-item');
+    var totalSlides = slides.length;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.style.display = 'none';
+        });
+        slides[index].style.display = 'block';
+    }
+
+    function moveSlide(step) {
+        slideIndex += step;
+        if (slideIndex >= totalSlides) {
+            slideIndex = 0;
+        } else if (slideIndex < 0) {
+            slideIndex = totalSlides - 1;
+        }
+        showSlide(slideIndex);
+    }
+
+    // Initialize the slideshow
+    showSlide(slideIndex);
+</script>
+{% endblock %}

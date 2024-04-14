@@ -123,12 +123,15 @@ class Animal(models.Model):
     video = models.FileField(upload_to=user_directory_path, null=True, blank=True,
                              validators=[FileExtensionValidator(allowed_extensions=['MOV', 'avi', 'mp4', 'webm', 'mkv'])])
     vaccinated = models.BooleanField(default=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='uploaded_animals')
     # user_identifier = models.CharField(max_length=100, null=True, blank=True)
     available_for = models.CharField(max_length=20, default='adoption')
     date_uploaded = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
-    adopted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,related_name='adopted_animals')
+    requested_by = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='requested_animals')
+    r_contact = models.CharField(max_length=20, null=True, blank=True)
+    requested = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -137,12 +140,22 @@ class Animal(models.Model):
             img = Image.open(self.picture.path)
 
             # Resize the image
-            max_size = (150,150)
+            max_size = (1280,720)
             img.thumbnail(max_size)
             img.save(self.picture.path)
     
     def get_absolute_url(self):
-        return reverse('animal-detail',args=(str(self.id)))
+        return reverse('animal-detail',args=(self.id))
+
+class AnimalRequest(models.Model):
+    animal = models.ManyToManyField(Animal, related_name='request')
+    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='requests')
+    contact = models.CharField(max_length=20)
+    date_requested = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='pending')
+
+    def __str__(self):
+        return f"{self.user.username} requested {self.animal.title}"
 
 class Accessories(models.Model):
     type = models.CharField(max_length=20)
@@ -168,7 +181,7 @@ class Accessories(models.Model):
             img.save(self.picture.path)
     
     def get_absolute_url(self):
-        return reverse('accessory-detail',args=(str(self.id)))
+        return reverse('accessory-detail',args=(self.id))
 
 
 class Ticket(models.Model):

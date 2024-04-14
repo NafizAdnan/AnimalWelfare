@@ -44,14 +44,10 @@ urlpatterns = [
      path('add_accessory', views.addAccessory, name='add_accessory'),
      path('update_accessory/<int:id>', views.updateAccessory, name='update_accessory'),
      path('delete_accessory/<int:id>', views.deleteAccessory, name='delete_accessory'),
-     path('product/<int:id>', views.viewProduct, name='view_product'),
      path('animal/for_adoption', views.animalsForAdoption, name='animals_for_adoption'),
      path('animal/for_daycare', views.animalsForDaycare, name='animals_for_daycare'),
      path('product/for_sale', views.productsForSale, name='products_for_sale'),
-     path('animal/<int:pk>/', views.animal_detail, name='animal_detail'),
-     path('request-adoption/<int:pk>/', views.request_adoption, name='request_adoption'),
-     path('animal_adoption/<int:id>/', views.animal_detail, name='animal_detail'),
-     path('request_adoption/<int:id>/', views.request_adoption, name='request_adoption'),
+     path('animal/<int:id>/', views.animal_detail, name='animal_detail'),
      path('update-password', views.change_password, name='change_password'),
      path('create-ticket', views.create_ticket, name='create_ticket'),
      path('ticket/<int:ticket_id>', views.ticket_detail, name='ticket_detail'),
@@ -77,9 +73,11 @@ urlpatterns = [
      path('know_before/', views.know_before, name='know_before'),
      path('know_before_cat/', views.know_before_cat, name='know_before_cat'),
      path('know_before_dog/', views.know_before_dog, name='know_before_dog'),
-     path('animal_daycare/<int:id>/', views.animal_detail_2, name='animal_detail_2'),
      path('order-history/<str:username>', views.order_history, name='order_history'),
      path('cancel-order/<str:order_id>', views.cancel_order, name='cancel_order'),
+     path('request-animal/<int:id>', views.request_animal, name='request_animal'),
+     path('cancel-request/<int:id>', views.cancel_request, name='cancel_request'),
+     path('complete-request/<int:id>', views.complete_request, name='complete_request'),
      
 ]
 
