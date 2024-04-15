@@ -11,7 +11,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from AnimalWelfare import settings
-from . tokens import account_activation_token
+from .tokens import account_activation_token
 from django.core.mail import EmailMessage, send_mail
 from django.conf import settings
 from .models import *
@@ -24,6 +24,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
+
 # Create your views here.
 
 def home(request):
@@ -31,7 +32,8 @@ def home(request):
         return redirect('baseapp:admin_dashboard')
     if request.user.is_authenticated:
         return redirect('baseapp:user_dashboard')
-    return render(request, 'baseapp/index.html',{'room_name':"broadcast"})
+    return render(request, 'baseapp/index.html', {'room_name': "broadcast"})
+
 
 # @require_POST
 # def mark_notifications_read(request):
@@ -41,10 +43,9 @@ def home(request):
 #     return JsonResponse({'success': False}, status=401)
 
 def signup(request):
-
     if request.user.is_authenticated:
         return redirect('baseapp:home')
-    
+
     if request.method == "POST":
         print(request.POST)
         username = request.POST.get('username')
@@ -58,9 +59,9 @@ def signup(request):
             messages.error(request, "Username already exist! Please try some other username.")
             return redirect('baseapp:signup')
 
-        #if User.objects.filter(email=email).exists():
-            #messages.error(request, "Email Already Registered!!")
-            #return redirect('signup')
+        # if User.objects.filter(email=email).exists():
+        # messages.error(request, "Email Already Registered!!")
+        # return redirect('signup')
 
         if len(username) > 20:
             messages.error(request, "Username must be under 20 charcters!!")
@@ -74,7 +75,8 @@ def signup(request):
             messages.error(request, "Username must be Alpha-Numeric!!")
             return redirect('baseapp:signup')
 
-        newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email, password=pass1)
+        newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email,
+                                           password=pass1)
         # newUser.contact = contact
         # Temporarily until Custom Auth Backend is Ready
         # newUser.is_active = True
@@ -117,7 +119,8 @@ def signup(request):
 
     return render(request, 'baseapp/signup.html')
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def update_profile(request):
     user = request.user
     if request.method == "POST":
@@ -125,7 +128,7 @@ def update_profile(request):
         user.first_name = request.POST.get('fname', user.first_name)
         user.last_name = request.POST.get('lname', user.last_name)
         user.email = request.POST.get('email', user.email)
-        
+
         user.contact = request.POST['contact'] or user.contact
         user.address = request.POST['address'] or user.address
         user.bio = request.POST['bio'] or user.bio
@@ -136,14 +139,15 @@ def update_profile(request):
             # user.profile_picture = None
             # user.profile_picture.delete(save=True)
             user.profile_picture.delete()
-        
+
         user.save()
         messages.success(request, "Profile Updated Successfully!!")
         return redirect('baseapp:user_profile', username=user.username)
-    
+
     return render(request, 'baseapp/update_profile.html', {'user': user})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def change_password(request):
     if request.method == "POST":
         user = request.user
@@ -167,6 +171,7 @@ def change_password(request):
 
     return render(request, 'baseapp/change_password.html')
 
+
 def signin(request):
     if request.user.is_authenticated:
         return redirect('baseapp:home')
@@ -185,11 +190,11 @@ def signin(request):
 
     return render(request, "baseapp/signin.html")
 
+
 def signout(request):
     logout(request)
     messages.success(request, "Logged Out Successfully!!")
     return redirect('baseapp:home')
-
 
 
 def activate(request, uidb64, token):
@@ -211,11 +216,10 @@ def activate(request, uidb64, token):
     else:
         messages.success(request, "Account NOT Activated!!")
         return redirect('baseapp:signin')
-        #return render(request, 'activation_failed.html')
+        # return render(request, 'activation_failed.html')
 
 
-
-def account_activate(request,newUser):
+def account_activate(request, newUser):
     current_site = get_current_site(request)
     email_subject = "Confirm your Email @ Animal_Welfare - Django Login!!"
     message2 = render_to_string('baseapp/email_confirmation.html', {
@@ -238,7 +242,7 @@ def account_activate(request,newUser):
     return redirect('baseapp:home')
 
 
-@login_required(login_url='baseapp:signin')
+@login_required(login_url='signin')
 def addAnimal(request):
     if request.method == "POST":
         print(request.POST)
@@ -251,8 +255,8 @@ def addAnimal(request):
         vaccinated = request.POST.get('vaccinated', False) == 'on'
         available_for = request.POST.get('available_for')
 
-        animal = Animal(title=title, age=age, breed=breed, description=description, location=location, 
-                         contact=contact, vaccinated=vaccinated, available_for=available_for, user=request.user)
+        animal = Animal(title=title, age=age, breed=breed, description=description, location=location,
+                        contact=contact, vaccinated=vaccinated, available_for=available_for, user=request.user)
 
         picture = request.FILES.get('picture', None)
         if picture:
@@ -275,8 +279,8 @@ def addAnimal(request):
 
     return render(request, 'baseapp/add_animal.html')
 
-def is_animal_in_image(picture, path):
 
+def is_animal_in_image(picture, path):
     with open(path, 'wb+') as destination:
         for chunk in picture.chunks():
             destination.write(chunk)
@@ -301,7 +305,7 @@ def is_animal_in_image(picture, path):
     return False
 
 
-@login_required(login_url='baseapp:signin')
+@login_required(login_url='signin')
 def updateAnimal(request, id):
     animal = get_object_or_404(Animal, id=id)
     if request.method == "POST":
@@ -315,7 +319,7 @@ def updateAnimal(request, id):
         animal.available_for = request.POST.get('available_for', animal.available_for)
 
         picture = request.FILES.get('picture')
-        if picture and picture != animal.picture:
+        if picture != animal.picture:
             os.makedirs(settings.TEMP_UPLOAD_DIR, exist_ok=True)
             temp_path = os.path.join(settings.TEMP_UPLOAD_DIR, picture.name)
             if is_animal_in_image(picture, temp_path):
@@ -335,7 +339,8 @@ def updateAnimal(request, id):
 
     return render(request, 'baseapp/update_animal.html', {'animal': animal})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def deleteAnimal(request, id):
     animal = Animal.objects.get(id=id)
     animal.delete()
@@ -344,46 +349,53 @@ def deleteAnimal(request, id):
         return redirect('baseapp:manage_animals')
     return redirect('baseapp:upload_history', username=request.user.username)
 
+
 def animalList(request):
     animals = Animal.objects.all()
-    return render(request, 'baseapp/animal_list.html', {'animals':animals})
+    return render(request, 'baseapp/animal_list.html', {'animals': animals})
 
 
-@login_required(login_url='baseapp:signin')
+@login_required(login_url='signin')
 def userProfile(request, username):
     user = User.objects.get(username=username)
-    return render(request, 'baseapp/user_profile.html', {'user':user})
+    return render(request, 'baseapp/user_profile.html', {'user': user})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def uploadHistory(request, username):
     user = User.objects.get(username=username)
     animals = Animal.objects.filter(user=user)
-    return render(request, 'baseapp/upload_history.html', {'animals':animals})
+    return render(request, 'baseapp/upload_history.html', {'animals': animals})
+
 
 def is_admin(user):
     return user.is_active and (user.is_staff or user.is_superuser or user.is_admin)
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
-def adminDashboard(request):
-    return render(request, 'baseapp/admin_dashboard.html',{'room_name':"broadcast"})
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
+def adminDashboard(request):
+    return render(request, 'baseapp/admin_dashboard.html', {'room_name': "broadcast"})
+
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def manageAnimals(request):
     animals = Animal.objects.all()
     pending = animals.filter(approved=False)
-    return render(request, 'baseapp/manage_animals.html', {'pending':pending})
+    return render(request, 'baseapp/manage_animals.html', {'pending': pending})
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def approved_uploads(request):
     animals = Animal.objects.filter(approved=True)
     print(animals)
-    return render(request, 'baseapp/approved_uploads.html', {'animals':animals})
+    return render(request, 'baseapp/approved_uploads.html', {'animals': animals})
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def approveAnimal(request, id):
     animal = Animal.objects.get(id=id)
     if request.method == "POST":
@@ -393,13 +405,15 @@ def approveAnimal(request, id):
         return redirect('baseapp:approved_uploads')
     return redirect('baseapp:manage_animals')
 
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def manageAccessories(request):
     accessories = Accessories.objects.all()
-    return render(request, 'baseapp/manage_accessories.html', {'accessories':accessories})
+    return render(request, 'baseapp/manage_accessories.html', {'accessories': accessories})
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def addAccessory(request):
     if request.method == "POST":
         title = request.POST['title']
@@ -409,7 +423,8 @@ def addAccessory(request):
         color = request.POST['color']
         stock = request.POST['stock']
 
-        accessory = Accessories(title=title, price=price, description=description, type=type, color=color, stock=stock, uploaded_by=request.user)
+        accessory = Accessories(title=title, price=price, description=description, type=type, color=color, stock=stock,
+                                uploaded_by=request.user)
         if 'picture' in request.FILES:
             accessory.picture = request.FILES['picture']
         accessory.save()
@@ -418,8 +433,9 @@ def addAccessory(request):
 
     return render(request, 'baseapp/add_accessory.html')
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def updateAccessory(request, id):
     accessory = Accessories.objects.get(id=id)
     if request.method == "POST":
@@ -442,35 +458,46 @@ def updateAccessory(request, id):
         messages.success(request, "Accessory Updated Successfully!!")
         return redirect('baseapp:manage_accessories')
 
-    return render(request, 'baseapp/update_accessory.html', {'accessory':accessory})
+    return render(request, 'baseapp/update_accessory.html', {'accessory': accessory})
 
-@login_required(login_url='baseapp:signin')
-@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+
+@login_required(login_url='signin')
+@user_passes_test(is_admin, login_url='signin', redirect_field_name=None)
 def deleteAccessory(request, id):
     accessory = Accessories.objects.get(id=id)
     accessory.delete()
     messages.success(request, "Accessory Deleted Successfully!!")
     return redirect('baseapp:manage_accessories')
 
+
 def accessoriesList(request):
     accessories = Accessories.objects.all()
-    return render(request, 'baseapp/accessories_list.html', {'accessories':accessories})
+    return render(request, 'baseapp/accessories_list.html', {'accessories': accessories})
 
-@login_required(login_url='baseapp:signin')
+
+def viewProduct(request, id):
+    product = Accessories.objects.get(id=id)
+    return render(request, 'baseapp/view_product.html', {'product': product})
+
+
+@login_required(login_url='signin')
 def userDashboard(request):
-    return render(request, 'baseapp/user_dashboard.html',{'room_name':"broadcast"})
+    return render(request, 'baseapp/user_dashboard.html', {'room_name': "broadcast"})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def animalsForAdoption(request):
     animals = Animal.objects.filter(available_for='Adoption', approved=True)
-    return render(request, 'baseapp/animals_for_adoption.html', {'animals':animals})
+    return render(request, 'baseapp/animals_for_adoption.html', {'animals': animals})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def animalsForDaycare(request):
     animals = Animal.objects.filter(available_for='Daycare', approved=True)
-    return render(request, 'baseapp/animal_for_daycare.html', {'animals':animals})
+    return render(request, 'baseapp/animal_for_daycare.html', {'animals': animals})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def create_ticket(request):
     if request.method == 'POST':
         title = request.POST.get('title', '')
@@ -484,13 +511,15 @@ def create_ticket(request):
 
     return render(request, 'baseapp/create_ticket.html')
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def ticket_detail(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     messages = ticket.messages.all()
     return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket, 'inbox': messages})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def add_message(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     if request.method == 'POST':
@@ -500,7 +529,8 @@ def add_message(request, ticket_id):
             return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
     return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def list_tickets(request):
     if request.user.is_superuser:
         tickets = Ticket.objects.all()
@@ -508,7 +538,8 @@ def list_tickets(request):
         tickets = Ticket.objects.filter(user=request.user)
     return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 @user_passes_test(lambda u: u.is_superuser)
 def accept_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -517,7 +548,8 @@ def accept_ticket(request, ticket_id):
     messages.success(request, "Ticket Accepted!!")
     return redirect('baseapp:list_tickets')
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 @user_passes_test(lambda u: u.is_superuser)
 def decline_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -525,7 +557,8 @@ def decline_ticket(request, ticket_id):
     messages.info(request, "Ticket Declined!!")
     return redirect('baseapp:list_tickets')
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def close_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     ticket.status = 'closed'
@@ -533,7 +566,8 @@ def close_ticket(request, ticket_id):
     messages.warning(request, "Ticket Closed!!")
     return redirect('baseapp:list_tickets')
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 @user_passes_test(lambda u: u.is_superuser)
 def assign_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -546,51 +580,65 @@ def assign_ticket(request, ticket_id):
     return render(request, 'baseapp/assign_ticket.html', {'ticket': ticket})
 
 
-@login_required(login_url='baseapp:signin')
+@login_required(login_url='signin')
+def productsForSale(request):
+    products = Accessories.objects.all
+    return render(request, 'baseapp/products_for_sale.html', {'products': products})
+
+
+@login_required(login_url='signin')
 def animal_detail(request, id):
-    animal = get_object_or_404(Animal, id=id)
-    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
+    if request.user.is_authenticated:  # Check if user is authenticated
+        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
+            print("User ID:", request.user.id)
+        else:
+            print("User has no 'id' attribute")
+    else:
+        print("User is not authenticated")
 
-@login_required(login_url='baseapp:signin')
-def request_animal(request, id):
     animal = get_object_or_404(Animal, id=id)
-    if request.method == 'POST':
-        user = request.user
-        contact_number = request.POST.get('contact_number')
-        animal.requested_by = user
-        animal.r_contact = contact_number
-        animal.requested = True
-        animal.save()
-        AnimalRequest.objects.create(animal=animal, user=user, contact=contact_number)
-        messages.success(request, "Requested Successfully!!")
-        return redirect('baseapp:animal_detail', id=id)
-    return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
-@login_required(login_url='baseapp:signin')
-def cancel_request(request, id):
-    animal = get_object_or_404(Animal, id=id)
-    requested_by = animal.requested_by
-    animal.requested_by = None
-    animal.r_contact = None
-    animal.requested = False
-    animal.save()
-    AnimalRequest.objects.filter(animal=animal, user=requested_by).status = 'cancelled'
-    messages.success(request, "Request Cancelled!!")
-    return redirect('baseapp:animal_detail', id=id)
+    return render(request, 'baseapp/animal_detail.html', {'animal': animal, 'user': request.user})
 
-@login_required(login_url='baseapp:signin')
-def complete_request(request, id):
+
+@login_required(login_url='signin')
+def animal_detail_2(request, id):
+    if request.user.is_authenticated:  # Check if user is authenticated
+        if hasattr(request.user, 'id'):  # Check if user has 'id' attribute
+            print("User ID:", request.user.id)
+        else:
+            print("User has no 'id' attribute")
+    else:
+        print("User is not authenticated")
+
     animal = get_object_or_404(Animal, id=id)
-    animal.completed = True
-    animal.save()
-    AnimalRequest.objects.filter(animal=animal, user=animal.requested_by).status = 'completed'
-    messages.success(request, "Request Completed!!")
-    return redirect('baseapp:animal_detail', id=id)
+
+    return render(request, 'baseapp/animal_detail_2.html', {'animal': animal, 'user': request.user})
+
+
+@login_required(login_url='signin')
+def request_adoption(request, id):
+    # Fetch the animal object by its ID
+    animal = get_object_or_404(Animal, id=id)
+    # Logic to handle adoption request
+    # For example, you might want to notify the admin or perform other actions
+    messages.success(request, "Adoption Request Successful")
+
+    # Redirect to a success page or to the animal detail page
+    redirect('baseapp:animal_detail', id=id)
+
+    return render(request, 'baseapp/animal_detail.html')
+
 
 # views.py
 
 from django.db.models import Q
 
+
+###################################################################################################
+
+
+@login_required(login_url='signin')
 def productsForSale(request):
     query = request.GET.get('q')
     sort_by = request.GET.get('sort_by')
@@ -640,7 +688,7 @@ def productsForSale(request):
         return render(request, 'baseapp/productsearch.html', context)
 
 
-
+@login_required
 def add_to_cart(request, accessory_id):
     if request.method == "POST":
         print(request.POST)
@@ -655,9 +703,10 @@ def add_to_cart(request, accessory_id):
             cart_item.quantity += 1
             cart_item.save()
 
-        return redirect('baseapp:cart')
+        return redirect('baseapp:products_for_sale')
 
 
+@login_required
 def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     cart_item.delete()
@@ -665,6 +714,7 @@ def remove_from_cart(request, item_id):
     return redirect('baseapp:cart')
 
 
+@login_required
 def adjust_cart_item(request, item_id, action):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     if action == "add":
@@ -680,6 +730,7 @@ def adjust_cart_item(request, item_id, action):
     return redirect('baseapp:cart')
 
 
+@login_required
 def cart_view(request):
     print(request.user)
     try:
@@ -699,22 +750,29 @@ def cart_view(request):
     return render(request, 'baseapp/cart.html', context)
 
 
+@login_required
 def product_detail(request, pk):
+    # Retrieve the specific product based on the primary key (pk)
     product = get_object_or_404(Accessories, pk=pk)
+
+    # You can add any additional logic or data processing here if needed
 
     return render(request, 'baseapp/product_detail.html', {'product': product})
 
 
+@login_required
 def place_order(request):
     if request.method == 'POST':
         # Create a new order with form data
         new_order = Order()
         new_order.order_id = generate_random_identifier()  # Generate a random Order ID
         new_order.user = request.user
+        print(request.POST.get('name'), '########################################################3')
         cart_items = CartItem.objects.filter(cart__user=request.user)
         new_order.items_summary = "\n".join(
             f"{item.quantity}x {item.accessory.title} - ${item.total_price}" for item in cart_items)
         new_order.total_cost = sum(item.total_price for item in cart_items)
+        print(request.POST.get('name'), '########################################################3')
         new_order.name = request.POST.get('name')
         new_order.email = request.POST.get('email')
         new_order.phone = request.POST.get('phone')
@@ -724,11 +782,13 @@ def place_order(request):
         new_order.payment_status = False  # Payment status is initially False
         new_order.payment = request.POST.get('payment')
         new_order.save()
+
         # Clear the user's cart
         CartItem.objects.filter(cart__user=request.user).delete()
+
         # Redirect to a new URL for order confirmation
         return redirect('baseapp:order_status', order_id=new_order.id)
-        #return redirect('order_confirmation', order_id=new_order.order_id)
+        # return redirect('order_confirmation', order_id=new_order.order_id)
     else:
         # If the request is GET, display the cart items and total price
         cart_items = CartItem.objects.filter(cart__user=request.user)
@@ -736,25 +796,52 @@ def place_order(request):
 
         return render(request, 'baseapp/place_order.html', {'items': cart_items, 'total_price': total_price})
 
+
+@login_required
+def cart_view(request):
+    print(request.user)
+    try:
+        cart = Cart.objects.get(user=request.user)
+        print(cart)
+        items = CartItem.objects.filter(cart=cart)
+        total_price = sum(item.accessory.price * item.quantity for item in items)
+    except Cart.DoesNotExist:
+        print("Cart does not exist")
+        items = []
+        total_price = 0
+
+    context = {
+        'items': items,
+        'total_price': total_price
+    }
+    return render(request, 'baseapp/cart.html', context)
+
+
+@login_required
 def order_history(request, username):
-    #orders = Order.objects.filter(user__username=username)  # Ensure you're filtering by the related user's username
+    # orders = Order.objects.filter(user__username=username)  # Ensure you're filtering by the related user's username
     orders = Order.objects.filter(user__username=username).order_by('-created_at')
     return render(request, 'baseapp/order_history.html', {'orders': orders})
 
+
+@login_required
 def order_status(request, order_id):
     # Retrieve the order using the order_id
     order = get_object_or_404(Order, id=order_id)
     # Pass the order to the template
     return render(request, 'baseapp/order_status.html', {'order': order})
-    
+
+
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order.delete()
     messages.success(request, "Order Cancelled Successfully!!")
     return redirect('baseapp:order_history', username=request.user.username)
 
-#STRIPE
-# views.py
+
+# STRIPE PAYMENT
+
+'''
 def payment_success(request, order_id):
     # Logic to handle successful payment
     order = get_object_or_404(Order, id=order_id)
@@ -763,12 +850,62 @@ def payment_success(request, order_id):
         order.save()
     # You can retrieve the session ID with request.GET.get('session_id')
     return render(request, 'baseapp/success.html')
+'''
+
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+
+def payment_success(request, order_id):
+    # Logic to handle successful payment
+    order = get_object_or_404(Order, id=order_id)
+    if not order.payment_status:
+        order.payment_status = True
+        order.save()
+
+        # Parse the items_summary to update stock for each accessory purchased
+        items = order.items_summary.split('\n')
+        for item in items:
+            parts = item.split(' - $')
+            quantity, title = parts[0].split('x ')
+            accessory = Accessories.objects.get(title=title.strip())
+            accessory.stock -= int(quantity.strip())  # Decrease the stock by the quantity purchased
+            accessory.save()  # Save the updated accessory
+
+
+        # Email subject
+        subject = f'Order Confirmation - {order.id} - Animal Welfare'
+
+        # Render HTML email template with context data
+        html_message = render_to_string('baseapp/email_purchase.html', {
+            'user': order.name,
+            'order_id': order.id,
+            'items_summary': order.items_summary,
+            'total_cost': order.total_cost,
+        })
+        plain_message = strip_tags(html_message)
+        # Send an email to the user
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [order.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
+    # You can retrieve the session ID with request.GET.get('session_id')
+    return render(request, 'baseapp/success.html')
+
 
 def payment_cancel(request, order_id):
     # Logic to handle payment cancellation
     return render(request, 'baseapp/cancel.html')
 
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
 
 def create_stripe_session(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -786,9 +923,9 @@ def create_stripe_session(request, order_id):
                     'currency': 'usd',
                     'product_data': {
                         'name': title.strip(),
-                        #'description': item
+                        # 'description': item
                     },
-                    'unit_amount': int(float(total_price) * 100/int(quantity.strip())),
+                    'unit_amount': int(float(total_price) * 100 / int(quantity.strip())),
                 },
                 'quantity': int(quantity.strip()),
             })
@@ -804,7 +941,9 @@ def create_stripe_session(request, order_id):
         )
         return redirect(session.url, code=303)
     else:
+
         return redirect('baseapp:order_status', order_id=order.id)
+
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -837,9 +976,12 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
+
 from django.shortcuts import render
 import requests
-@login_required(login_url='baseapp:signin')
+
+
+@login_required(login_url='signin')
 def animal_info(request):
     # Initialize variables
     animal_name = ''
@@ -867,11 +1009,13 @@ def animal_info(request):
     # Render the template with the form and API response
     return render(request, 'baseapp/animal_info.html', {'animal_name': animal_name, 'api_response': api_response})
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def know_before(request):
     return render(request, 'baseapp/know_before.html')
 
-@login_required(login_url='baseapp:signin')
+
+@login_required(login_url='signin')
 def know_before_cat(request):
     if request.method == 'POST':
         name = request.POST.get('cat_name')  # Get the value of 'cat_name' from the form
@@ -884,10 +1028,11 @@ def know_before_cat(request):
             error_message = "Error: {} {}".format(response.status_code, response.text)
             return render(request, 'baseapp/know_before_cat.html', {'error_message': error_message})
     else:
-            # Render an empty form when the page is initially loaded
+        # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_cat.html')
-    
-@login_required(login_url='baseapp:signin')
+
+
+@login_required(login_url='signin')
 def know_before_dog(request):
     if request.method == 'POST':
         name = request.POST.get('dog_name')  # Get the value of 'cat_name' from the form
@@ -900,5 +1045,5 @@ def know_before_dog(request):
             error_message = "Error: {} {}".format(response.status_code, response.text)
             return render(request, 'baseapp/know_before_dog.html', {'error_message': error_message})
     else:
-            # Render an empty form when the page is initially loaded
+        # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_dog.html')
