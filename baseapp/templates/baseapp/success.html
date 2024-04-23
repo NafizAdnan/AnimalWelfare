@@ -1,63 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction Success</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: center;
-            max-width: 400px;
-        }
-        #checkmark {
-            fill: #4caf50;
-            width: 60px;
-            height: 60px;
-            margin-bottom: 20px;
-        }
-        #status {
-            color: #4caf50;
-        }
-        #message {
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        #contBtn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-        #contBtn:hover {
-            background-color: #45a049;
-        }
-    </style>
-</head>
-<body>
-    <div id="card">
-        <svg version="1.1" id="checkmark" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" xml:space="preserve">
-            <path d="M131.583,92.152l-0.026-0.041c-0.713-1.118-2.197-1.447-3.316-0.734l-31.782,20.257l-4.74-12.65 c-0.483-1.29-1.882-1.958-3.124-1.493l-0.045,0.017c-1.242,0.465-1.857,1.888-1.374,3.178l5.763,15.382 c0.131,0.351,0.334,0.65,0.579,0.898c0.028,0.029,0.06,0.052,0.089,0.08c0.08,0.073,0.159,0.147,0.246,0.209 c0.071,0.051,0.147,0.091,0.222,0.133c0.058,0.033,0.115,0.069,0.175,0.097c0.081,0.037,0.165,0.063,0.249,0.091 c0.065,0.022,0.128,0.047,0.195,0.063c0.079,0.019,0.159,0.026,0.239,0.037c0.074,0.01,0.147,0.024,0.221,0.027 c0.097,0.004,0.194-0.006,0.292-0.014c0.055-0.005,0.109-0.003,0.163-0.012c0.323-0.048,0.641-0.16,0.933-0.346l34.305-21.865 C131.967,94.755,132.296,93.271,131.583,92.152z" />
-            <circle fill="none" stroke="#ffffff" stroke-width="5" stroke-miterlimit="10" cx="109.486" cy="104.353" r="32.53" />
+{% extends 'main.html' %}
+
+{% block title %}Payment Success{% endblock title %}
+
+{% block content %}
+
+<style>
+
+.payment-success {
+    background: #fff;
+    color: #333;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    text-align: center;
+    padding: 50px 0;
+}
+
+.success-container {
+    max-width: 800px; /* Increased width */
+    margin: auto;
+    padding: 40px; /* Increased padding */
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Enhanced shadow */
+}
+
+.success-title {
+    font-size: 32px; /* Increased font size */
+    font-weight: bold; /* Make text bold */
+    color: #4CAF50;
+    margin: 20px 0;
+}
+
+.success-details {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.customer-support p {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.btn-continue {
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-continue:hover {
+    background-color: #45A049;
+}
+
+.icon-tick-circle {
+    width: 100px;
+    height: 100px;
+    display: block;
+    margin: 20px auto;
+}
+
+.tick-circle {
+    fill: #4CAF50; /* Green circle */
+}
+
+.tick-check {
+    stroke: #ffffff; /* White checkmark */
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+</style>
+<div class="payment-success">
+    <div class="success-container">
+        <div class="success-animation">
+            <!-- Include a celebratory animation here -->
+        </div>
+        <svg class="icon-tick-circle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="tick-circle" cx="26" cy="26" r="25" fill="#4CAF50"/>
+            <polyline class="tick-check" fill="none" stroke="#ffffff" stroke-width="5" points="14,27 22,35 38,17"/>
         </svg>
-        <h1 id="status">Success</h1>
-        <p id="message">Congratulations, your transaction From Animal Welfare has been successful.</p>
-        <a href="/" id="contBtn">Continue</a>
+        <h1 class="success-title">Thank You for Your Purchase!</h1>
+        <p class="success-details">Your payment has been processed successfully. A confirmation email has been sent to you.</p>
+        </div>
+        <a href="{% url 'baseapp:products_for_sale' %}" class="btn-continue">Continue Shopping</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock content %}

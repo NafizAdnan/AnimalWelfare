@@ -1,0 +1,215 @@
+{% extends 'main.html' %}
+
+{% block title %}Manage Orders{% endblock title %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0 0 0 0;
+    padding: 5px;
+  }
+  .order-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 15px; /* Increased vertical gaps */
+    margin-bottom: 200px;
+  }
+  .order-table th, .order-table td {
+    border: none;
+    padding: 15px;
+    text-align: left;
+    font-size: 1.2em;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
+  .order-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.3em;
+  }
+  .payment-status-paid {
+    color: #28a745;
+    font-weight: bold;
+  }
+  .payment-status-not-paid {
+    color: #c34c58;
+    font-weight: bold;
+    font-size: medium;
+  }
+  h2 {
+    color: #333;
+    text-align: center;
+    margin-top: 10px;
+    font-size: x-large;
+  }
+
+  .order-summary {
+    font-size: 0.9em;
+  }
+  .order-summary strong {
+    font-weight: bold;
+  }
+
+  .clean-cut-btn {
+    background: linear-gradient(145deg, #cacaca, #f0f0f0);
+    color: #333;
+    padding: 1px 5px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 5px 5px 15px #a8a8a8, -5px -5px 15px #ffffff;
+    transition: all 0.3s ease;
+  }
+
+  .clean-cut-btn:hover {
+      background: linear-gradient(145deg, #f0f0f0, #cacaca); /* Inverted gradient on hover */
+      box-shadow: 10px 10px 20px #a8a8a8, -10px -10px 20px #ffffff; /* Enhanced shadow on hover */
+      transform: translateY(-2px); /* Slight raise on hover */
+  }
+
+  .link {
+    color: #007bff; /* Blue color for links */
+    text-decoration: none; /* No underline for links */
+  }
+  .link :hover {
+    text-decoration: underline; /* Underline on hover */
+  }
+  .my-modal-position {
+    top: 150px;
+    transform: translate(-50%, -50%);
+  }
+
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="mx-auto px-4 sm:px-8 py-2 mb-10">
+  <!-- Tabs/Navs -->
+  <div class="mb-3">
+      <ul class="flex border-b">
+          <li class="-mb-px mr-1">
+              <a href="{% url 'baseapp:manage_accessories' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Manage Products</a>
+          </li>
+          <li class="mr-1">
+              <a href="{% url 'baseapp:manage_orders' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">Manage Orders</a>
+          </li>
+          <li class="mr-1">
+              <a href="{% url 'baseapp:completed_orders' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Completed Orders</a>
+          </li>
+      </ul>
+  </div>
+<h2 class="font-bold">Incomplete Orders List</h2>
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Address</th>
+                <th>Payment Status</th>
+                <th>Items Ordered</th>
+                <th>Total Amount</th>
+                <th>Delivery</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <form method="POST" action="{% url 'baseapp:update_order' order.id %}">
+                {% csrf_token %}
+            <tr>
+                <td class="link text-center"><a href="{% url 'baseapp:order_status' order.id %}">{{ order.id }}</a></td>
+                <td class="text-gray-800">{{ order.name }}</td>
+                <td class="text-gray-800">{{ order.email }}</td>
+                <td class="text-gray-800">{{ order.phone }}</td>
+                <td class="text-gray-800">{{ order.city }}</td>
+                <td class="text-gray-800">{{ order.state }}</td>
+                <td class="text-gray-800">{{ order.address }}</td>
+                <td>
+                    {% if not order.payment_status %}
+                        <select name="payment_status_{{ order.id }}" class="bg-gray-100">
+                            <option value="False" {% if not order.payment_status %}selected{% endif %}>Not Paid</option>
+                            <option value="True">Paid</option>
+                        </select>
+                    {% else %}
+                        <span class="text-green-500 font-semibold text-center">Paid</span>
+                        <input type="hidden" name="payment_status_{{ order.id }}" value="True">
+                    {% endif %}
+                </td>
+                <td class="text-gray-800">{{ order.items_summary }}</td>
+                <td class="text-gray-800 text-center">{{ order.total_cost }} BDT</td>
+                <td>
+                    {% if order.delivery != 'completed' %}
+                        <select name="delivery_status_{{ order.id }}" class="bg-gray-100">
+                            <option value="pending" {% if order.delivery == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if order.delivery == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if order.delivery == 'completed' %}selected{% endif %}>Delivered</option>
+                        </select>
+                    {% else %}
+                        <span class="text-green-800 font-semibold text-center">Delivered</span>
+                        <input type="hidden" name="delivery_status_{{ order.id }}" value="completed">
+                    {% endif %}
+                </td>
+                <td class="text-gray-800">
+                    <button type="submit" class="btn font-bold text-blue-600 bg-blue-100 hover:underline hover:bg-blue-200 mb-1">Update</button>
+                    {% if order.delivery == 'pending' %}
+                    <button type="button" class="btn font-bold text-red-600 hover:underline bg-red-100 hover:bg-red-200" data-toggle="modal" data-target="#cancelOrderModal"
+                        data-id="{{ order.id }}">Cancel</button>
+                    {% endif %}
+                </td>
+            </tr>
+            </form>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog my-modal-position">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black" id="cancelOrderModalLabel">Confirm Cancellation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body text-gray-900">
+                Are you sure you want to Cancel your Order "<span id="modalOrderId"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form method="POST" id="cancelOrderForm" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" id="modalOrderId" value="">
+                    <button type="submit" class="btn btn-danger">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $('#cancelOrderModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var orderId = button.data('id');
+        var modal = $(this);
+        modal.find('.modal-body #modalOrderId').val(orderId);
+        var deleteFormAction = "{% url 'baseapp:cancel_order' 999999 %}".replace('999999', orderId);
+        modal.find("#cancelOrderForm").attr("action", deleteFormAction);
+    });
+</script>
+{% endblock %}

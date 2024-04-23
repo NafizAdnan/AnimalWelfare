@@ -4,38 +4,34 @@
 
 {% block extra_css %}
 <style>
-    /* Base and Theme Styles */
     :root {
         --main-bg-color: #f0f0f0;
-        --container-bg-color: #ffffff;
-        --accent-color: #26496e;
+        --container-bg-color: #fdf9f3;
+        --accent-color: #27a09a;
         --hover-accent-color: #0056b3;
         --font-color: #333;
         --link-color: #0056b3;
         --link-hover-color: #004080;
     }
-
     body {
         background-color: var(--main-bg-color);
     }
-
-    /* Container Styles */
     .cart-container {
         max-width: 1000px;
-        margin: auto;
         padding: 2rem;
         background-color: var(--container-bg-color);
         border-radius: 0.5rem;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        margin-bottom: 200px;
+        margin-top: 100px;
+        margin-left: 450px;
     }
-
-    /* Cart Item Styles */
     .cart-item {
         display: flex;
         align-items: center;
         margin-bottom: 1rem;
         padding: 1rem;
-        background-color: #eeeeee;
+        background-color: #f1f0f0;
         border-radius: 0.5rem;
         transition: box-shadow 0.3s ease;
     }
@@ -53,52 +49,45 @@
 
     .cart-details {
         flex-grow: 1;
-        color: var(--font-color);
+        color: #1f2d29;
+        margin-left: 30px;
+        font-weight: 600;
     }
-
-    /* Cart Actions Styles */
     .cart-actions {
         display: flex;
         align-items: center;
     }
-
     .cart-actions button {
         background: none;
         border: none;
         cursor: pointer;
     }
-
     .fas {
         color: var(--accent-color);
     }
-
     .fas.fa-trash-alt {
         color: #e44d26;
     }
-
-    /* Adjustment buttons specifically */
     .adjust-buttons {
         display: flex;
         align-items: center;
-        margin-right: 10px; /* Spacing between quantity and adjust buttons */
+        margin-right: 10px;
     }
     .adjust-buttons button, .adjust-buttons span {
-        margin: 0 5px; /* Spacing between buttons and quantity */
+        margin: 0 5px;
     }
-
     .quantity-value {
-        font-size: 1.2rem; /* Larger font size for quantity value */
-        color: #333; /* Dark color for better visibility */
-        margin: 0 10px; /* Space around the quantity value */
+        font-size: 1.2rem;
+        color: #124838;
+        margin: 0 10px;
+        font-weight: bold;
     }
-    
     .remove-button {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
     }
-
     .remove-button button:hover::after {
         content: 'Remove';
         font-size: 0.8rem;
@@ -108,8 +97,6 @@
         border-radius: 4px;
         margin-left: 10px;
     }
-
-    /* Total Price and Button Container Styles */
     .total-price, .button-container {
         display: flex;
         justify-content: space-between;
@@ -120,20 +107,15 @@
         color: var(--font-color);
         margin-bottom: 2rem;
     }
-
-    /* Continue Shopping Link */
     .continue-shopping {
         font-size: 0.9rem;
         color: var(--link-color);
         text-decoration: none;
     }
-
     .continue-shopping:hover {
         color: var(--link-hover-color);
         text-decoration: underline;
     }
-
-    /* Place Order Button CSS */
     .place-order-btn {
         padding: 10px 20px;
         background-color: #4CAF50;
@@ -144,7 +126,6 @@
         font-size: 16px;
         transition: background-color 0.3s, transform 0.3s;
     }
-
     .place-order-btn:hover {
         background-color: #45a049;
         transform: translateY(-2px);
@@ -155,7 +136,7 @@
 
 {% block content %}
 <div class="cart-container">
-    <h2 class="text-3xl font-bold mb-5" style="color: var(--font-color);">Shopping Cart</h2>
+    <h2 class="text-3xl font-bold mb-5 text-center" style="color: var(--font-color);">Shopping Cart</h2>
     {% if items %}
     <div id="cartItems">
         {% for item in items %}
@@ -166,10 +147,10 @@
             <img src="">
             {% endif %}
             <div class="cart-details">
-                <p class="text-lg">{{ item.accessory.title }}</p>
+                <p class="text-lg mb-1">{{ item.accessory.title }}</p>
                 <div class="cart-item-quantity-price text-sm mb-2">
-                    <div class="price">Price: ${{ item.accessory.price }} each</div>
-                    <div class="quantity">Quantity: <strong>{{ item.quantity }}</strong></div>
+                    <div class="price mb-1">Price: {{ item.accessory.price }} BDT each</div>
+                    <div class="quantity mb-1">Quantity: <strong>{{ item.quantity }}</strong></div>
                 </div>
             </div>
             <div class="cart-actions">
@@ -199,14 +180,14 @@
     </div>
     <div class="total-price">
         <p>Total Price:</p>
-        <p>${{ total_price }}</p>
+        <p>{{ total_price }} BDT</p>
     </div>
     <div class="button-container">
         <a href="{% url 'baseapp:products_for_sale' %}" class="continue-shopping">Continue Shopping >></a>
         <button class="place-order-btn" onclick="location.href='{% url 'baseapp:place_order' %}'">Proceed to Checkout</button>
     </div>
     {% else %}
-    <p>Your cart is empty.</p>
+    <p class="text-center font-bold text-gray-500">Your cart is empty.</p>
     {% endif %}
 </div>
 {% endblock %}

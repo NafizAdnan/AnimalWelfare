@@ -1,72 +1,73 @@
 {% extends 'main.html' %}
-
-{% block title %}On Sale{% endblock %}
-
-{% block content %}
 {% load static %}
 
+{% block title %}{{product.title}}{% endblock %}
+
+{% block content %}
+
 <style>
-/* Container Styles */
-.container {
+.my-container {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    margin-top: 20px;
+    margin-top: 70px;
+    margin-bottom: 250px;
 }
 
-/* Product Image Styles */
 .product-image-wrapper {
-    flex: 0.35;
+    flex: 0.25;
     max-width: 50%;
+    padding-top: 30px;
+    padding-left: 80px;
 }
 
 .product-image {
-    width: 100%;
+    width: auto;
     height: auto;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Product Details Styles */
 .product-details {
     flex: 1;
     max-width: 50%;
-    padding-left: 30px;
+    padding-left: 100px;
+    padding-top: 50px;
 }
 
 .product-title {
     font-size: 2rem;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.product-description {
-    font-size: 1.5rem;
-    color: #666;
+    color: #171717;
     margin-bottom: 20px;
 }
 
+.product-description {
+    font-size: 1.4rem;
+    color: #1a1a1f;
+    margin-bottom: 40px;
+    margin-top: 30px;
+}
+
 .product-price {
-    font-size: 1.5rem;
-    color: #e44d26;
-    font-weight: bold;
+    font-size: 1.3rem;
+    color: #141111;
+    font-weight: 600;
     margin-bottom: 20px;
 }
 
 .price-value {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
 }
 
-/* Stock Display Styles */
 .stock-display {
-    font-size: 1rem;
-    color: #28a745;
-    margin-bottom: 20px;
+    font-size: 1.2rem;
+    color: #1d7934;
+    margin-bottom: 30px;
+    font-weight: 700;
 }
 
-/* Button Styles */
 .add-to-cart-button {
-    background-color: #007bff;
+    background-color: #0056b3;
     color: white;
     padding: 10px 20px;
     text-align: center;
@@ -79,7 +80,7 @@
 }
 
 .add-to-cart-button:hover {
-    background-color: #0056b3;
+    background-color: #47a518;
 }
 
 /* Header and View Cart Button Styles */
@@ -111,19 +112,14 @@
 
 </style>
 
-
-
-
 <!-- Header Section with View Cart Button -->
-<header class="header">
+<!-- <header class="header">
     <div class="view-cart-wrapper">
         <a href="{% url 'baseapp:cart' %}" class="view-cart-button">View Cart</a>
     </div>
-</header>
+</header> -->
 
-
-
-<div class="container">
+<div class="my-container">
     <!-- Product Image -->
     <div class="product-image-wrapper">
         {% if product.picture %}
@@ -135,11 +131,10 @@
 
     <!-- Product Details -->
     <div class="product-details">
-        <h2 class="product-title">{{ product.title }}</h2><h7>Type: ({{ product.type }})</h7>
-        <br>
-        <br>
+        <h2 class="product-title">{{ product.title }}</h2>
+        <p class="text-gray-600 mb-3 mt-2 font-medium">Type: {{ product.type }}</p>
         <p class="product-description">{{ product.description }}</p>
-        <p class="product-price">Price: <span class="price-value">${{ product.price }}</span></p>
+        <p class="product-price">Price: <span class="price-value">{{ product.price }} BDT</span></p>
 
         <!-- Stock Display -->
         <p class="stock-display">
@@ -154,7 +149,7 @@
         <form action="{% url 'baseapp:add_to_cart' product.id %}" method="post">
             {% csrf_token %}
             <input type="hidden" name="quantity" value="1" min="1">
-            <button type="submit" class="add-to-cart-button">
+            <button type="submit" class="add-to-cart-button font-bold">
                 Add to Cart
             </button>
         </form>

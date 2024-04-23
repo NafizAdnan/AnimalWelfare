@@ -1,0 +1,95 @@
+{% extends 'main.html' %}
+
+{% block title %}Catalogue - Animal Welfare{% endblock title %}
+
+{% block content %}
+<style>
+.add-to-cart-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    display: inline-block;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.add-to-cart-button:hover {
+    background-color: #0056b3;
+}
+</style>
+
+<!-- Tabs/Navs -->
+<div class="mb-n2 mt-1 ml-10 flex justify-between">
+    <ul class="flex border-b">
+        <li class="-mb-px mr-1">
+            <a href="{% url 'baseapp:catalog' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">All Categories</a>
+        </li>
+        <li class="mr-1">
+            <a href="{% url 'baseapp:animals_for_adoption' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">For Adoption</a>
+        </li>
+        <li class="mr-1">
+            <a href="{% url 'baseapp:animals_for_daycare' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">For Daycare</a>
+        </li>
+        <li class="mr-1">
+            <a href="{% url 'baseapp:products_for_sale' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Accessories</a>
+        </li>
+    </ul>
+</div>
+
+<div class="text-center p-4">
+    <h1 class="font-bold text-4xl mb-4 text-gray-700">Catalogue</h1>
+    <p class="text-xl text-gray-600"></p>
+</div>
+
+<!-- Grid Section -->
+<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mb-10 pb-4">
+
+    {% for item in catalog %}
+    {% if item.category == 'animal' %}
+    <!-- Product Card -->
+    <div class="w-72 bg-gray-100 shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
+        <a href="{% url 'baseapp:animal_detail' item.id %}">
+            {% if item.picture %}
+            <img src="{{ item.picture.url }}" alt="{{ item.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% else %}
+            <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% endif %}
+            <div class="px-4 py-3">
+                <h3 class="text-lg font-bold text-black truncate capitalize">{{ item.title }}</h3>
+                <p class="text-gray-600 text-sm my-1">For {{item.available_for}} </p>
+            </div>
+        </a>
+    </div>
+    {% else %}
+    <div class="w-72 bg-gray-100 shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
+        <a href="{% url 'baseapp:product_detail' item.id %}">
+            {% if item.picture %}
+            <img src="{{ item.picture.url }}" alt="{{ item.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% else %}
+            <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-80 w-72 object-cover rounded-t-xl" />
+            {% endif %}
+            <div class="px-4 py-3">
+                <h3 class="text-lg font-bold text-black truncate capitalize">{{ item.title }}</h3>
+                <p class="text-gray-600 text-sm my-1 mb-2">{{item.price}} BDT </p>
+                <form action="{% url 'baseapp:add_to_cart' item.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1" min="1">
+                    <button type="submit" class="add-to-cart-button">
+                        Add to Cart
+                    </button>
+                </form>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% empty %}
+    <!-- <div>No accessories found.</div> -->
+    {% endfor %}
+
+</section>
+
+{% endblock content %}

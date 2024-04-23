@@ -1,55 +1,55 @@
 {% extends 'main.html' %}
 
+{% block title %}Order History{% endblock title %}
+
 {% block extra_css %}
 <style>
   body {
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f4;
-    margin: 0;
-    padding: 20px;
+    margin: 0 0 0 0;
+    padding: 5px;
   }
   .order-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 25px; /* Increased vertical gaps */
-    margin-bottom: 20px;
+    border-spacing: 0 15px; /* Increased vertical gaps */
+    margin-bottom: 200px;
   }
   .order-table th, .order-table td {
     border: none;
     padding: 15px;
     text-align: left;
-    font-size: 1.2em; /* Increased font size */
+    font-size: 1.2em; 
     background-color: #fff;
     box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtle shadow effect */
   }
   .order-table th {
     background-color: #4CAF50;
     color: white;
-    font-size: 1.3em; /* Slightly larger font size for headers */
+    font-size: 1.3em; 
   }
   .payment-status-paid {
-    color: #28a745; /* Green color for paid status */
-    font-weight: bold; /* Highlighting the payment status */
+    color: #28a745; 
+    font-weight: bold;
   }
   .payment-status-not-paid {
-    color: #c34c58; /* Red color for not paid status */
-    font-weight: bold; /* Highlighting the payment status */
+    color: #c34c58; 
+    font-weight: bold;
     font-size: medium;
   }
   h2 {
     color: #333;
     text-align: center;
-    margin-top: 20px;
-    font-size: larger;
+    margin-top: 10px;
+    font-size: x-large;
   }
-
   .order-summary {
-    font-size: 0.9em; /* Smaller font size for summary */
+    font-size: 0.9em;
   }
   .order-summary strong {
-    font-weight: bold; /* Make the label bold */
+    font-weight: bold;
   }
-
   .clean-cut-btn {
     background: linear-gradient(145deg, #cacaca, #f0f0f0); /* Subtle gradient for depth */
     color: #333; /* Dark text for contrast */
@@ -63,13 +63,11 @@
     box-shadow: 5px 5px 15px #a8a8a8, -5px -5px 15px #ffffff; /* Dual shadow for a 3D effect */
     transition: all 0.3s ease; /* Smooth transition for hover effects */
   }
-
   .clean-cut-btn:hover {
       background: linear-gradient(145deg, #f0f0f0, #cacaca); /* Inverted gradient on hover */
       box-shadow: 10px 10px 20px #a8a8a8, -10px -10px 20px #ffffff; /* Enhanced shadow on hover */
       transform: translateY(-2px); /* Slight raise on hover */
   }
-
   .link {
     color: #007bff; /* Blue color for links */
     text-decoration: none; /* No underline for links */
@@ -83,12 +81,32 @@
   }
 
 </style>
-
 {% endblock extra_css %}
 
 {% block content %}
-
-<h2>Order History</h2>
+<div class="py-2">
+  <!-- Tabs/Navs -->
+  <div class="mb-2">
+      <ul class="flex border-b">
+          <li class="-mb-px mr-1">
+              <a href="{% url 'baseapp:upload_history' request.user.username %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">
+              Upload History
+              </a>
+          </li>
+          <li class="mr-1">
+              <a href="{% url 'baseapp:request_history' request.user.username %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">
+                  Request History
+              </a>
+          </li>
+          <li class="mr-1">
+              <a href="{% url 'baseapp:order_history' request.user.username %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">
+                  Order History
+              </a>
+          </li>
+      </ul>
+  </div>
+<div>
+<h2 class="font-bold text-xl">Order History</h2>
 <table class="order-table">
   <tr>
     <th>Order ID</th>
@@ -106,15 +124,15 @@
   </tr>
   {% for order in orders %}
   <tr>
-    <td class="link"> <a href="{% url 'baseapp:order_status' order.id %}"> {{ order.id }} </a> </td>
+    <td class="link text-center"> <a href="{% url 'baseapp:order_status' order.id %}"> {{ order.id }} </a> </td>
     <!--<td>{ { order.user.username }}</td>-->
-    <td>{{ order.name }}</td>
-    <td>{{ order.email }}</td>
-    <td>{{ order.phone }}</td>
-    <td>{{ order.city }}</td>
-    <td>{{ order.state }}</td>
-    <td>{{ order.address }}</td>
-    <td class="{{ order.payment_status|yesno:'payment-status-paid,payment-status-not-paid' }}">
+    <td class="text-gray-800">{{ order.name }}</td>
+    <td class="text-gray-800">{{ order.email }}</td>
+    <td class="text-gray-800">{{ order.phone }}</td>
+    <td class="text-gray-800">{{ order.city }}</td>
+    <td class="text-gray-800">{{ order.state }}</td>
+    <td class="text-gray-800">{{ order.address }}</td>
+    <td class="{{ order.payment_status|yesno:'payment-status-paid,payment-status-not-paid' }} text-center">
         {{ order.payment_status|yesno:"Paid,Not Paid" }}
         {% if not order.payment_status %}
           {% if order.payment == 'cod' %}
@@ -129,8 +147,8 @@
           {% endif %}
         {% endif %}
     </td>
-    <td class="order-summary"><strong>Items:</strong> <br>{{ order.items_summary }}</td>
-    <td class="order-summary"><strong>Total:</strong> ${{ order.total_cost }}</td>
+    <td class="order-summary text-gray-800"><strong>Items:</strong> <br>{{ order.items_summary }}</td>
+    <td class="order-summary text-gray-800"><strong>Total:</strong> ${{ order.total_cost }}</td>
     {% if order.delivery == 'pending' %}
     <td class="order-summary">
       <!-- Trigger/Open The Modal -->
@@ -142,24 +160,24 @@
         <div class="modal-dialog my-modal-position">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="cancelOrderModalLabel">Confirm Cancel Order</h5>
+              <h5 class="modal-title text-black" id="cancelOrderModalLabel">Cancel Confirmation</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body text-gray-900">
               Are you sure you want to cancel this order?
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <a href="{% url 'baseapp:cancel_order' order.id %}" class="btn btn-danger">Yes, Cancel Order</a>
+              <button type="button" class="btn btn-secondary text-white font-semibold" data-dismiss="modal">Close</button>
+              <a href="{% url 'baseapp:cancel_order' order.id %}" class="btn btn-danger text-white font-semibold">Confirm</a>
             </div>
           </div>
         </div>
       </div>
     </td>
     {% else %}
-    <td class="order-summary">{{ order.delivery }}</td>
+    <td class="order-summary text-green-800 font-semibold">{{ order.delivery }}</td>
     {% endif %}
   </tr>
   {% endfor %}

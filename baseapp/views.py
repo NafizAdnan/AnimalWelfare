@@ -21,8 +21,8 @@ from django.urls import reverse
 from .utils import *
 import os
 from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.core import serializers
+from django.http import JsonResponse, HttpResponseNotFound
 
 # Create your views here.
 
@@ -30,18 +30,106 @@ def home(request):
     if is_admin(request.user):
         return redirect('baseapp:admin_dashboard')
     if request.user.is_authenticated:
+        if not request.user.contact:
+            messages.warning(request, "Please update your profile first for seamless user experience.")
+            return redirect('baseapp:update_profile')
         return redirect('baseapp:user_dashboard')
     return render(request, 'baseapp/index.html',{'room_name':"broadcast"})
 
-# @require_POST
-# def mark_notifications_read(request):
-#     if request.user.is_authenticated:
-#         BroadcastNotification.objects.filter(user=request.user, read=False).update(read=True)
-#         return JsonResponse({'success': True})
-#     return JsonResponse({'success': False}, status=401)
+def notify_user(username, title, message, url=''):
+    user = User.objects.get(username=username)
+    Notification.objects.create(recipient=user, title=title, message=message, url=url)
+
+def notify_superuser(title, message, url=''):
+    superusers = User.objects.filter(is_superuser=True)
+    for user in superusers:
+        Notification.objects.create(recipient=user, title=title, message=message, url=url)
+
+@login_required(login_url='baseapp:signin')
+def get_notifications(request):
+    mark_read = request.GET.get('mark_read', 'false') == 'true'
+    notifications = Notification.objects.filter(recipient=request.user, read=False).order_by('-created_at')
+    notifications_data = []
+    count = 5
+    for n in notifications:
+        notifications_data.append({
+            'id': n.id,
+            'title': n.title,
+            'message': n.message,
+            'url': n.url,
+            'read': n.read,
+            'created_at': n.created_at.strftime('%b %d, %Y %I:%M %p'),
+        })
+        if mark_read and not n.url:
+            if count > 0:
+                n.read = True
+                n.save()
+                count -= 1
+    return JsonResponse({'notifications': notifications_data})
+
+@login_required(login_url='baseapp:signin')
+def mark_notification_as_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, recipient=request.user)
+        if not notification.read:
+            notification.read = True
+            notification.save()
+        if notification.url:
+            return redirect(notification.url)
+        return 
+    except Notification.DoesNotExist:
+        return HttpResponseNotFound("Notification not found")
+
+def unread_count(request):
+    if request.user.is_authenticated:
+        unread_count = Notification.objects.filter(recipient=request.user, read=False).count()
+        return JsonResponse({'unread_count': unread_count})
+    else:
+        return JsonResponse({'unread_count': 0})
+
+@login_required(login_url='baseapp:signin')
+def notification_list(request):
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    return render(request, 'baseapp/notification_list.html', {'notifications': notifications})
+
+def mark_all_as_read(request):
+    if request.user.is_authenticated:
+        notifications = Notification.objects.filter(recipient=request.user, read=False)
+        for n in notifications:
+            n.read = True
+            n.save()
+    return redirect('baseapp:notification_list')
+
+def chat_room(request, request_id):
+    active_request = get_object_or_404(AnimalRequest, request_id=request_id, status='active')
+    chat_room = get_object_or_404(ChatRoom, request=active_request)
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        if message:
+            ChatMessage.objects.create(chat_room=chat_room, sender=request.user, message=message)
+            ChatMessage.objects.filter(chat_room=chat_room, sender=request.user).update(is_read=True)
+            if request.user == active_request.user:
+                title = f"New Message!!"
+                message = f"You have received a new message from {request.user.username} for your {active_request.animal.available_for.capitalize()} request."
+                url = reverse('baseapp:chat_room', kwargs={'request_id': request_id})
+                notify_user(active_request.animal.user.username, title, message, url)
+            else:
+                title = f"New Message!!"
+                message = f"You have received a new message from {request.user.first_name} {request.user.last_name} regarding {active_request.animal.title}'s {active_request.animal.available_for} request."
+                url = reverse('baseapp:chat_room', kwargs={'request_id': request_id})
+                notify_user(active_request.user.username, title, message, url)
+            return redirect('baseapp:chat_room', request_id=request_id)
+    inbox = chat_room.messages.all()
+    return render(request, 'baseapp/chat_room.html', {'chat_room': chat_room, 'inbox': inbox})
+
+def close_chat(request, request_id):
+    active_request = get_object_or_404(AnimalRequest, request_id=request_id)
+    chat_room = get_object_or_404(ChatRoom, request=active_request)
+    if request.user == chat_room.request.user or request.user == chat_room.request.animal.user:
+        chat_room.delete()
+    return None
 
 def signup(request):
-
     if request.user.is_authenticated:
         return redirect('baseapp:home')
     
@@ -75,12 +163,6 @@ def signup(request):
             return redirect('baseapp:signup')
 
         newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email, password=pass1)
-        # newUser.contact = contact
-        # Temporarily until Custom Auth Backend is Ready
-        # newUser.is_active = True
-        # newUser.is_staff = True
-        # newUser.is_superuser = True
-        # End
         newUser.is_active = True
         newUser.save()
         messages.success(request, "Your Account has been created succesfully!!")
@@ -96,7 +178,6 @@ def signup(request):
         current_site = get_current_site(request)
         email_subject = "Confirm your email at " + current_site.domain
         message2 = render_to_string('baseapp/email_confirmation.html', {
-
             'name': newUser.first_name,
             'domain': current_site.domain,
             'uid': urlsafe_base64_encode(force_bytes(newUser.pk)),
@@ -190,8 +271,6 @@ def signout(request):
     messages.success(request, "Logged Out Successfully!!")
     return redirect('baseapp:home')
 
-
-
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -212,30 +291,6 @@ def activate(request, uidb64, token):
         messages.success(request, "Account NOT Activated!!")
         return redirect('baseapp:signin')
         #return render(request, 'activation_failed.html')
-
-
-
-def account_activate(request,newUser):
-    current_site = get_current_site(request)
-    email_subject = "Confirm your Email @ Animal_Welfare - Django Login!!"
-    message2 = render_to_string('baseapp/email_confirmation.html', {
-
-        'name': newUser.first_name,
-        'domain': current_site.domain,
-        'uid': urlsafe_base64_encode(force_bytes(newUser.pk)),
-        'token': account_activation_token.make_token(newUser)
-    })
-    email = EmailMessage(
-        email_subject,
-        message2,
-        settings.EMAIL_HOST_USER,
-        [newUser.email],
-    )
-    email.fail_silently = True
-    email.send()
-
-    messages.success(request, "Your Account has been activated!!")
-    return redirect('baseapp:home')
 
 
 @login_required(login_url='baseapp:signin')
@@ -267,16 +322,13 @@ def addAnimal(request):
                 return redirect('baseapp:add_animal')
 
         animal.video = request.FILES.get('video') if 'video' in request.FILES else None
-
         animal.save()
-
         messages.success(request, "Animal Added Successfully!!")
         return redirect('baseapp:upload_history', username=request.user.username)
 
     return render(request, 'baseapp/add_animal.html')
 
 def is_animal_in_image(picture, path):
-
     with open(path, 'wb+') as destination:
         for chunk in picture.chunks():
             destination.write(chunk)
@@ -299,7 +351,6 @@ def is_animal_in_image(picture, path):
             print("Error in getting categories!!")
 
     return False
-
 
 @login_required(login_url='baseapp:signin')
 def updateAnimal(request, id):
@@ -328,6 +379,10 @@ def updateAnimal(request, id):
 
         if 'video' in request.FILES:
             animal.video = request.FILES['video']
+        
+        remove_video = request.POST.get('remove_video') == 'on'
+        if remove_video:
+            animal.video.delete()
 
         animal.save()
         messages.success(request, "Animal Updated Successfully!!")
@@ -358,7 +413,11 @@ def userProfile(request, username):
 def uploadHistory(request, username):
     user = User.objects.get(username=username)
     animals = Animal.objects.filter(user=user)
-    return render(request, 'baseapp/upload_history.html', {'animals':animals})
+    animals_json = serializers.serialize('json', animals)
+    paginator = Paginator(animals, 10)  # Show 10 animals per page.
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'baseapp/upload_history.html', {'page_obj': page_obj})
 
 def is_admin(user):
     return user.is_active and (user.is_staff or user.is_superuser or user.is_admin)
@@ -458,16 +517,16 @@ def accessoriesList(request):
 
 @login_required(login_url='baseapp:signin')
 def userDashboard(request):
-    return render(request, 'baseapp/user_dashboard.html',{'room_name':"broadcast"})
+    return render(request, 'baseapp/user_dashboard.html', {'room_name':"broadcast"})
 
 @login_required(login_url='baseapp:signin')
 def animalsForAdoption(request):
-    animals = Animal.objects.filter(available_for='Adoption', approved=True)
+    animals = Animal.objects.filter(available_for='Adoption', approved=True, completed=False)
     return render(request, 'baseapp/animals_for_adoption.html', {'animals':animals})
 
 @login_required(login_url='baseapp:signin')
 def animalsForDaycare(request):
-    animals = Animal.objects.filter(available_for='Daycare', approved=True)
+    animals = Animal.objects.filter(available_for='Daycare', approved=True, completed=False)
     return render(request, 'baseapp/animal_for_daycare.html', {'animals':animals})
 
 @login_required(login_url='baseapp:signin')
@@ -480,6 +539,10 @@ def create_ticket(request):
             ticket.save()
             Message.objects.create(ticket=ticket, user=request.user, body=message_body)
             messages.success(request, "Ticket Created!!")
+            # notify superusers
+            title = "New Ticket Created!!"
+            message = "A new ticket has been created by " + request.user.first_name + " " + request.user.last_name
+            notify_superuser(title, message, reverse('baseapp:ticket_detail', kwargs={'ticket_id':ticket.id}))
             return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
 
     return render(request, 'baseapp/create_ticket.html')
@@ -497,15 +560,26 @@ def add_message(request, ticket_id):
         body = request.POST.get('body', '')
         if body:
             Message.objects.create(ticket=ticket, user=request.user, body=body)
+            if request.user == ticket.user:
+                # notify staff
+                title = f"New Message on Ticket {ticket_id}!!"
+                message = f"A new message has been added to ticket {ticket_id} by {request.user.username}"
+                notify_superuser(title, message, reverse('baseapp:ticket_detail', kwargs={'ticket_id':ticket.id}))
+            else:
+                # notify user
+                title = f"New Message on Ticket {ticket_id}!!"
+                message = f"A new message has been added to ticket {ticket_id} by {request.user.username}"
+                notify_user(ticket.user.username, title, message, reverse('baseapp:ticket_detail', kwargs={'ticket_id':ticket.id}))
+                
             return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
     return render(request, 'baseapp/ticket_detail.html', {'ticket': ticket})
 
 @login_required(login_url='baseapp:signin')
 def list_tickets(request):
     if request.user.is_superuser:
-        tickets = Ticket.objects.all()
+        tickets = Ticket.objects.all().order_by('-status')
     else:
-        tickets = Ticket.objects.filter(user=request.user)
+        tickets = Ticket.objects.filter(user=request.user).order_by('-status')
     return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
 
 @login_required(login_url='baseapp:signin')
@@ -513,8 +587,14 @@ def list_tickets(request):
 def accept_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     ticket.accepted = True
+    ticket.accepted_by = request.user
     ticket.save()
     messages.success(request, "Ticket Accepted!!")
+    # notify user
+    title = "Ticket Accepted!!"
+    message = "Your ticket has been accepted by " + request.user.username
+    url = reverse('baseapp:ticket_detail', kwargs={'ticket_id':ticket.id})
+    notify_user(ticket.user.username, title, message, url)
     return redirect('baseapp:list_tickets')
 
 @login_required(login_url='baseapp:signin')
@@ -523,6 +603,10 @@ def decline_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     ticket.delete()
     messages.info(request, "Ticket Declined!!")
+    # notify user
+    title = "Ticket Declined!!"
+    message = "Your ticket has been declined by " + request.user.username
+    notify_user(ticket.user.username, title, message)
     return redirect('baseapp:list_tickets')
 
 @login_required(login_url='baseapp:signin')
@@ -549,6 +633,15 @@ def assign_ticket(request, ticket_id):
 @login_required(login_url='baseapp:signin')
 def animal_detail(request, id):
     animal = get_object_or_404(Animal, id=id)
+    print(animal)
+    if ((animal.requested) and (request.user == animal.requested_by or animal.user)):
+        print("inside if")
+        try:
+            active_request = AnimalRequest.objects.get(animal=animal, user=request.user, status='completed')
+        except:
+            active_request = AnimalRequest.objects.get(animal=animal, user=animal.requested_by, status='active')
+        print(active_request)
+        return render(request, 'baseapp/animal_detail.html', {'animal':animal, 'active_request':active_request})
     return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
 @login_required(login_url='baseapp:signin')
@@ -558,37 +651,74 @@ def request_animal(request, id):
         user = request.user
         contact_number = request.POST.get('contact_number')
         animal.requested_by = user
-        animal.r_contact = contact_number
         animal.requested = True
         animal.save()
         AnimalRequest.objects.create(animal=animal, user=user, contact=contact_number)
+        active_request = AnimalRequest.objects.get(animal=animal, user=user, status='active')
+        ChatRoom.objects.create(request=active_request)
         messages.success(request, "Requested Successfully!!")
+        # notify user
+        title = "Request for " + animal.title
+        message = "Your animal " + animal.title + " has been requested by " + user.first_name + " " + user.last_name
+        notify_user(animal.user.username, title, message, reverse('baseapp:animal_detail', kwargs={'id':animal.id}))
         return redirect('baseapp:animal_detail', id=id)
     return render(request, 'baseapp/animal_detail.html', {'animal':animal})
 
 @login_required(login_url='baseapp:signin')
-def cancel_request(request, id):
-    animal = get_object_or_404(Animal, id=id)
-    requested_by = animal.requested_by
-    animal.requested_by = None
-    animal.r_contact = None
-    animal.requested = False
-    animal.save()
-    AnimalRequest.objects.filter(animal=animal, user=requested_by).status = 'cancelled'
-    messages.success(request, "Request Cancelled!!")
-    return redirect('baseapp:animal_detail', id=id)
+def cancel_request(request, request_id):
+    request_to_cancel = get_object_or_404(AnimalRequest, request_id=request_id)
+    print(request_to_cancel)
+    animal = request_to_cancel.animal
+    if animal.requested and request_to_cancel.status == 'active':
+        request_to_cancel.status = 'cancelled'
+        animal.requested_by = None
+        animal.requested = False
+        animal.save()
+        request_to_cancel.save()
+        close_chat(request, request_id)
+        messages.success(request, "Request Cancelled!!")
+        if request.user == animal.user:
+            title = "Request Cancelled!!"
+            message = "Your request for " + animal.title + " has been cancelled by the animal owner."
+            url = reverse('baseapp:animal_detail', kwargs={'id':animal.id})
+            notify_user(request_to_cancel.user.username, title, message, url)
+        else:
+            title = "Request Cancelled!!"
+            message = f"{request.user.first_name} {request.user.last_name} has cancelled the {animal.available_for} request for {animal.title}."
+            url = reverse('baseapp:animal_detail', kwargs={'id':animal.id})
+            notify_user(animal.user.username, title, message, url)
+    return redirect('baseapp:animal_detail', id=animal.id)
 
 @login_required(login_url='baseapp:signin')
-def complete_request(request, id):
-    animal = get_object_or_404(Animal, id=id)
+def complete_request(request, request_id):
+    request_to_complete = AnimalRequest.objects.get(request_id=request_id)
+    animal = request_to_complete.animal
+    request_to_complete.status = 'completed'
     animal.completed = True
     animal.save()
-    AnimalRequest.objects.filter(animal=animal, user=animal.requested_by).status = 'completed'
+    request_to_complete.save()
+    close_chat(request, request_id)
     messages.success(request, "Request Completed!!")
-    return redirect('baseapp:animal_detail', id=id)
+    if request.user == animal.user:
+        title = "Request Completed!!"
+        message = f"{animal.available_for.capitalize()} request for {animal.title} has been marked completed by the owner."
+        url = reverse('baseapp:animal_detail', kwargs={'id':animal.id})
+        notify_user(request_to_complete.user.username, title, message, url)
+        notify_superuser(title, message, url)
+    else:
+        title = "Request Completed!!"
+        message = f"{request.user.first_name} {request.user.last_name} has marked the {animal.available_for} request for {animal.title} as completed."
+        url = reverse('baseapp:animal_detail', kwargs={'id':animal.id})
+        notify_user(animal.user.username, title, message, url)
+        notify_superuser(title, message, url)
+    return redirect('baseapp:request_history', username=request.user.username)
+
+@login_required(login_url='baseapp:signin')
+def request_history(request, username):
+    items = AnimalRequest.objects.filter(user__username=username).order_by('-date_requested')
+    return render(request, 'baseapp/request_history.html', {'items':items})
 
 # views.py
-
 from django.db.models import Q
 
 def productsForSale(request):
@@ -640,7 +770,6 @@ def productsForSale(request):
         return render(request, 'baseapp/productsearch.html', context)
 
 
-
 def add_to_cart(request, accessory_id):
     if request.method == "POST":
         print(request.POST)
@@ -664,7 +793,6 @@ def remove_from_cart(request, item_id):
     messages.success(request, "Item removed from cart.")
     return redirect('baseapp:cart')
 
-
 def adjust_cart_item(request, item_id, action):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     if action == "add":
@@ -674,11 +802,10 @@ def adjust_cart_item(request, item_id, action):
         if cart_item.quantity < 1:
             cart_item.delete()
             messages.success(request, "Item removed from cart.")
-            return redirect('cart_detail')
+            return redirect('baseapp:cart')
     cart_item.save()
     messages.success(request, "Cart updated.")
     return redirect('baseapp:cart')
-
 
 def cart_view(request):
     print(request.user)
@@ -698,10 +825,8 @@ def cart_view(request):
     }
     return render(request, 'baseapp/cart.html', context)
 
-
 def product_detail(request, pk):
     product = get_object_or_404(Accessories, pk=pk)
-
     return render(request, 'baseapp/product_detail.html', {'product': product})
 
 
@@ -713,7 +838,7 @@ def place_order(request):
         new_order.user = request.user
         cart_items = CartItem.objects.filter(cart__user=request.user)
         new_order.items_summary = "\n".join(
-            f"{item.quantity}x {item.accessory.title} - ${item.total_price}" for item in cart_items)
+            f"{item.quantity}x {item.accessory.title} - {item.total_price} BDT" for item in cart_items)
         new_order.total_cost = sum(item.total_price for item in cart_items)
         new_order.name = request.POST.get('name')
         new_order.email = request.POST.get('email')
@@ -737,20 +862,28 @@ def place_order(request):
         return render(request, 'baseapp/place_order.html', {'items': cart_items, 'total_price': total_price})
 
 def order_history(request, username):
-    #orders = Order.objects.filter(user__username=username)  # Ensure you're filtering by the related user's username
     orders = Order.objects.filter(user__username=username).order_by('-created_at')
     return render(request, 'baseapp/order_history.html', {'orders': orders})
 
 def order_status(request, order_id):
-    # Retrieve the order using the order_id
     order = get_object_or_404(Order, id=order_id)
-    # Pass the order to the template
+    if is_admin(request.user):
+        return render(request, 'baseapp/update_order.html', {'order': order})
+    if request.user != order.user:
+        return HttpResponse("You are not authorized to view this page.", status=403)
     return render(request, 'baseapp/order_status.html', {'order': order})
     
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order.delete()
     messages.success(request, "Order Cancelled Successfully!!")
+    title = "Order Cancelled!!"
+    message = f"Order {order.order_id} has been cancelled."
+    url = reverse('baseapp:order_status', kwargs={'order_id':order.id})
+    if request.user.is_superuser:
+        notify_user(order.user.username, title, message, url)
+    else:
+        notify_superuser(title, message, url)
     return redirect('baseapp:order_history', username=request.user.username)
 
 #STRIPE
@@ -811,7 +944,6 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     endpoint_secret = 'your-endpoint-secret'  # Replace with your endpoint's secret
-
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
@@ -822,19 +954,15 @@ def stripe_webhook(request):
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
         return HttpResponse(status=400)
-
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-
         # Retrieve the order using the session ID
         order_id = session.get('client_reference_id')
         order = Order.objects.get(id=order_id)
-
         # Update the order's payment status
         order.payment_status = True
         order.save()
-
     return HttpResponse(status=200)
 
 from django.shortcuts import render
@@ -844,18 +972,14 @@ def animal_info(request):
     # Initialize variables
     animal_name = ''
     api_response = ''
-
     # Check if the form is submitted
     if request.method == 'POST':
         # Extract the animal name from the form
         animal_name = request.POST.get('animal_name', '')
-
         # Construct the API URL with the provided animal name
         api_url = 'https://api.api-ninjas.com/v1/animals?name={}'.format(animal_name)
-
         # Make the API call
         response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
-
         # Check the response status
         if response.status_code == requests.codes.ok:
             # If successful, get the API response
@@ -863,7 +987,6 @@ def animal_info(request):
         else:
             # If there's an error, display the error message
             api_response = {'error': 'Error occurred while fetching data'}
-
     # Render the template with the form and API response
     return render(request, 'baseapp/animal_info.html', {'animal_name': animal_name, 'api_response': api_response})
 
@@ -902,3 +1025,57 @@ def know_before_dog(request):
     else:
             # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_dog.html')
+
+def catalog(request):
+    animals = Animal.objects.filter(approved=True, completed=False)
+    accessories = Accessories.objects.filter(stock__gt=0)
+    catalog = list(animals) + list(accessories)
+    catalog.sort(key=lambda x: x.date_uploaded, reverse=True)
+    for item in catalog:
+        if isinstance(item, Animal):
+            item.category = 'animal'
+        else:
+            item.category = 'accessory'
+    return render(request, 'baseapp/catalog.html', {'catalog': catalog})
+
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+def manage_orders(request):
+    orders = Order.objects.exclude(delivery='completed')
+    return render(request, 'baseapp/manage_orders.html', {'orders': orders})
+
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+def update_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if request.method == 'POST':
+        print(request.POST)
+        order.delivery = request.POST.get(f'delivery_status_{order_id}') or order.delivery
+        order.payment_status = request.POST.get(f'payment_status_{order_id}') or order.payment_status
+        order.save()
+        messages.success(request, "Order Updated!!")
+        if request.POST.get(f'delivery_status_{order_id}') == 'completed':
+            title = "Order Delivered!!"
+            message = f"Your order {order.order_id} has been delivered."
+            url = reverse('baseapp:order_status', kwargs={'order_id':order.id})
+            notify_user(order.user.username, title, message, url)
+        elif request.POST.get(f'delivery_status_{order_id}') == 'in_progress':
+            title = "Order Updated!!"
+            message = f"Your order {order.order_id} is out for delivery."
+            url = reverse('baseapp:order_status', kwargs={'order_id':order.id})
+            notify_user(order.user.username, title, message, url)
+        return redirect('baseapp:manage_orders')
+    return render(request, 'baseapp/update_order.html', {'order': order})
+
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+def completed_orders(request):
+    orders = Order.objects.filter(delivery='completed')
+    return render(request, 'baseapp/completed_orders.html', {'orders': orders})
+
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+def active_requests(request):
+    active_requests = AnimalRequest.objects.filter(status='active')
+    return render(request, 'baseapp/active_requests.html', {'active_requests': active_requests})
+
+@user_passes_test(is_admin, login_url='baseapp:signin', redirect_field_name=None)
+def completed_requests(request):
+    completed_requests = AnimalRequest.objects.filter(status='completed')
+    return render(request, 'baseapp/completed_requests.html', {'completed_requests': completed_requests})

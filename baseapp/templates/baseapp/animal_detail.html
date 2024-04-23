@@ -13,7 +13,7 @@
         display: flex;
         justify-content: space-between;
         align-items: start;
-        padding: 20px;
+        padding: 80px 0 180px 40px;
     }
     .left-column {
         flex: 1;
@@ -31,46 +31,47 @@
         flex: 15%;
         position: fixed;
         right: 10px;
-        top: 30%;
+        top: 50%;
         transform: translateY(-50%);
-        padding: 20px;
+        padding: 10px;
     }
     .action-buttons {
-        position: fixed; /* Positioned fixed on the right side of the viewport */
-        top: 50%; /* Center vertically */
-        right: 10px; /* Distance from the right edge */
+        position: absolute;
+        top: 20%;
+        right: 150px; /* Distance from the right edge */
         transform: translateY(-50%); /* Center align */
     }
     .action-button {
-        background-color: #4CAF50; /* Green background */
-        color: white;
+        background-color: #28a82c;
+        color: rgb(247, 249, 239);
         border: none;
         padding: 10px 20px;
-        margin-bottom: 10px; /* Space between buttons */
+        margin-top: 20px;
         cursor: pointer;
         border-radius: 5px;
+        font-weight: 600;
     }
     .action-button:hover {
-        background-color: #45a049; /* Darker green on hover */
+        background-color: #2d8532;
     }
     .rounded-full {
         border-radius: 9999px;
     }
     .highlight-contact {
-        background-color: #e2e8f0; /* Light blue background */
-        color: #1a202c; /* Dark text color for contrast */
+        background-color: #e2e8f0;
+        color: #35476c;
         padding: 2px 2px;
         border-radius: 2px;
         display: inline-block;
-        cursor: pointer; /* Makes it appear clickable */
+        cursor: pointer;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        font-weight: bold;
+        font-weight: bolder;
+        font-size: x-large;
     }
     .highlight-contact:hover {
-        background-color: #cbd5e1; /* Darker on hover */
+        background-color: #cbd5e1;
     }
 
-    /* Slideshow Styles */
     .slide-container {
         position: relative;
         width: fit-content;
@@ -87,14 +88,14 @@
         top: 50%;
         transform: translateY(-50%);
         color: #fff;
-        font-size: 24px;
+        font-size: 16px;
         cursor: pointer;
         padding: 10px;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgb(197, 183, 137);
         border-radius: 50%;
     }
     .control-icon:hover {
-        background: rgba(0, 0, 0, 0.8);
+        background: rgb(215, 192, 102);
     }
     .prev {
         left: -40px;
@@ -102,7 +103,6 @@
     .next {
         right: -40px;
     }
-    /* Custom input field styles */
     .custom-input {
         width: 20%;
         padding: 8px 12px; /* Comfortable padding */
@@ -111,16 +111,58 @@
         font-size: 16px;
         margin-top: 12px;
         align-self: center;
+        background-color: #fff;
     }
-    /* Custom button styles */
     .small-button {
-        padding: 6px 10px; /* Smaller padding to reduce button size */
-        font-size: 14px; /* Smaller font size */
-        border-radius: 12px; /* Fully rounded corners for a pill-like effect */
-        display: inline-block; /* Ensure it doesn't stretch to full width */
-        width: auto; /* Only as wide as its content */
-        margin-top: 12px; /* Spacing from the element above */
+        padding: 6px 10px;
+        font-size: 14px;
+        border-radius: 12px;
+        display: inline-block;
+        width: auto;
+        margin-top: 12px;
     }
+    
+    .text-card {
+        background: #cfe9e4;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin: 20px 0;
+        line-height: 1.8;
+        color: #333;
+        width: fit-content;
+        margin-left: -20px;
+        text-align: center;
+    }
+
+    .highlight-contact {
+        background-color: #e2e8f0;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .highlight-contact:hover {
+        background-color: #cbd5e1;
+    }
+
+    .btn-message {
+        display: inline-block;
+        padding: 10px 15px;
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        border-radius: 5px;
+        text-decoration: none; /* Removes underline */
+        transition: background-color 0.3s ease;
+    }
+    .btn-message:hover {
+        background-color: #45a049;
+        color: white;
+        text-decoration: none; /* Keeps text from underlining on hover */
+    }
+
 </style>
 {% endblock extra_css %}
 
@@ -145,66 +187,161 @@
         </div>
     </div>
     <div class="center-column">
-        <h1 class="font-bold text-4xl mb-1">{{ animal.title }}</h1>
-        <p class="text-xl">{{ animal.description }}</p>
-        <p>Age: {{ animal.age }} months</p>
-        <p>Breed: {{ animal.breed }}</p>
-        <p>Location: {{ animal.location }}</p>
-        <p>Vaccination Status: 
+        <h1 class="font-bold text-4xl pb-2">{{ animal.title }}</h1>
+        <p class="text-xl pb-2">{{ animal.description }}</p>
+        <p class="p-2 text-lg">Age: {{ animal.age }} months</p>
+        <p class="p-2 text-lg">Breed: {{ animal.breed }}</p>
+        <p class="p-2 text-lg">Location: {{ animal.location }}</p>
+        <p class="p-2 text-lg">Vaccination Status: 
             {% if animal.vaccinated %}
-            <span class="text-green-500">Vaccinated</span>
+            <span class="text-green-500 font-bold">Vaccinated</span>
             {% else %}
-            <span class="text-red-500">Not Vaccinated</span>
+            <span class="text-red-500 font-bold">Not Vaccinated</span>
             {% endif %}
         </p>
 {% if not animal.completed %}
     {% if not animal.requested %}
         {% if request.user != animal.user %}
         <!-- Initial Request Button -->
-        <button id="requestBtn" class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-3">Request for {{animal.available_for}}</button>
+        <button id="requestBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full mt-3">Request for {{animal.available_for}}</button>
         <!-- Hidden form to display after button click -->
         <form id="requestForm" action="{% url 'baseapp:request_animal' animal.id %}" method="POST" style="display:none;">
             {% csrf_token %}
             <input type="text" name="contact_number" placeholder="Enter your contact number" required class="custom-input">
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold small-button">Proceed</button>
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold small-button">Proceed</button>
         </form>
         {% endif %}
     {% else %}
+    <div class="text-card">
         {% if request.user == animal.user %}
-        <p class="text-black-500 mt-2">{{animal.requested_by.username}} has requested for this animal.</p>
-        Please contact at
-        <div onclick="copyToClipboard('{{animal.r_contact}}')" class="highlight-contact mt-4">{{animal.r_contact}}</div>
-        <p>OR</p>
-        <button onclick="startLiveChat()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">Live Chat</button>
+        <p class="text-green-600 text-xl font-bold mb-2">
+            {{ animal.requested_by.username }} has requested for this animal on {{active_request.date_requested}}
+        </p>
+        <p>
+            <strong class="text-gray-700 text-xl mb-2">Please contact at </strong>
+            <span onclick="copyToClipboard('{{ active_request.contact }}')" class="highlight-contact">
+                {{ active_request.contact }}
+            </span>
+        </p>
+        <p class="text-semibold text-gray-700 mt-1 mb-1">OR</p>
+        <a href="{% url 'baseapp:chat_room' active_request.request_id %}" class="btn-message font-semibold text-gray-100">Send a Message</a>
         {% elif request.user == animal.requested_by %}
-        <p class="text-black-500 mt-2">You have requested for this animal.</p>
-        Please contact at
-        <div onclick="copyToClipboard('{{ animal.contact }}')" class="highlight-contact mt-4"> {{ animal.contact }} </div>
-        <p>OR</p> 
-        <button onclick="startLiveChat()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">Live Chat</button>
+        <p class="text-green-600 text-xl font-bold mb-2">
+            You have requested for this animal on {{active_request.date_requested}}
+        </p>
+        <p>
+            <strong class="text-gray-700 text-xl mb-2">Please contact at </strong>
+            <span onclick="copyToClipboard('{{ animal.contact }}')" class="highlight-contact">{{ animal.contact }}</span>
+        </p>
+        <p class="text-semibold text-gray-700 mt-1 mb-1">OR</p>
+        <a href="{% url 'baseapp:chat_room' active_request.request_id %}" class="btn-message font-semibold text-gray-100">Send a Message</a>
         {% else %}
-        <p class="text-black-500 mt-2">This animal is already requested by someone else. Please check back later</p>
+        <p class="text-black-500 mt-2">This animal is already requested by someone else. Please check back later.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if animal.requested %}
+        {% if request.user == animal.user or request.user == animal.requested_by %}
+        <div class="right-column action-buttons">
+            <form action="{% url 'baseapp:cancel_request' active_request.request_id %}" method="POST">
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#cancelConfirmationModal" data-id="{{ active_request.request_id }}" data-name="{{ active_request.animal.title }}">Cancel Ongoing Request</button>
+            </form>
+            <form action="{% url 'baseapp:complete_request' active_request.request_id %}" method="POST">
+                {% csrf_token %}
+                <button type="button" class="action-button" data-toggle="modal" data-target="#completeConfirmationModal" data-id="{{ active_request.request_id }}" data-name="{{ active_request.animal.title }}">Mark as Completed</button>
+            </form>
+        </div>
         {% endif %}
     {% endif %}
+{% else %}
+    <div class="text-card">
+        <p class="text-green-600 text-xl font-bold mb-2">This animal has been adopted by {{ animal.requested_by.username }}.</p>
+    </div>
+{% endif %}
+</div>
+</div>
+
+<div class="modal fade" id="completeConfirmationModal" tabindex="-1" aria-labelledby="completeConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog my-modal-position">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black" id="completeConfirmationModalLabel">Confirm Completion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-gray-900">
+                Are you sure that you have successfully received "<span id="completedAnimalName"></span>"?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <form method="POST" id="completeRequestForm" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" id="modalCompletedRequestId" value="">
+                    <button type="submit" class="btn btn-success">Yes, Confirm!</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
-{% if animal.requested %}
-<div class="center-column action-buttons">
-    <form action="{% url 'baseapp:cancel_request' animal.id %}" method="POST">
-        {% csrf_token %}
-        <button type="submit" class="action-button">Cancel Ongoing Request</button>
-    </form>
-    <form action="{% url 'baseapp:complete_request' animal.id %}" method="POST">
-        {% csrf_token %}
-        <button type="submit" class="action-button">Mark as Completed</button>
-    </form>
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelConfirmationModal" tabindex="-1" aria-labelledby="cancelConfirmationModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog my-modal-position">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black" id="cancelConfirmationModalLabel">Confirm Cancellation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body text-gray-900">
+                Are you sure you want to Cancel {% if active_request.animal.available_for == 'adoption' %} Adopting {% else %} Daycaring {% endif %} "<span id="requestedAnimalName"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Go Back</button>
+                <form method="POST" id="cancelRequestForm" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" id="modalRequestId" value="">
+                    <button type="submit" class="btn btn-danger">Yes, Cancel.</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-{% endif %}
-{% endif %}
+
 {% endblock content %}
 
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $('#completeConfirmationModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var requestId = button.data('id');
+        var animalName = button.data('name');
+        var modal = $(this);
+        modal.find('.modal-body #completedAnimalName').text(animalName);
+        modal.find('.modal-body #modalCompletedRequestId').val(requestId);
+        var completeFormAction = "{% url 'baseapp:complete_request' 999999 %}".replace('999999', requestId);
+        modal.find("#completeRequestForm").attr("action", completeFormAction);
+    });
+</script>
+<script>
+    $('#cancelConfirmationModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var requestId = button.data('id');
+        var animalName = button.data('name');
+        var modal = $(this);
+        modal.find('.modal-body #requestedAnimalName').text(animalName);
+        modal.find('.modal-body #modalRequestId').val(requestId);
+        var deleteFormAction = "{% url 'baseapp:cancel_request' 999999 %}".replace('999999', requestId);
+        modal.find("#cancelRequestForm").attr("action", deleteFormAction);
+    });
+</script>
 <script>
     // Toggle form visibility
     document.getElementById('requestBtn').addEventListener('click', function() {

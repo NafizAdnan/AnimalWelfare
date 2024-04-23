@@ -132,43 +132,46 @@
             <p><strong>City:</strong> <span>{{ order.city }}</span></p>
             <p><strong>State:</strong> <span>{{ order.state }}</span></p>
             <p><strong>Address:</strong> <span>{{ order.address }}</span></p>
-            <p><strong>Payment Status:</strong> 
-                {% if order.payment_status %}
-                <span class="text-green-500 font-semibold">Paid</span>
-                {% else %}
-                <span class="text-red-500 font-semibold">Not Paid</span>
-                {% endif %}
-            </p>
-            <p class="mb-4">
-                <strong>Delivery Status:</strong>
-                {% if order.delivery == 'pending' %}
-                <span style="color: #ff0000; font-weight: bold;">Pending</span>
-                {% elif order.delivery == 'in_progress' %}
-                <span style="color: #ff8c00; font-weight: bold;">In Progress</span>
-                {% else %}
-                <span style="color: #19631c; font-weight: bold;">Delivered</span>
-                {% endif %}
-            </p>
-        </div>
-        {% if order.payment_status or order.payment == 'cod' %}
-        <a href="{% url 'baseapp:order_history' order.user.username %}" class="link btn">Order History</a>
-        {% else %}
-        <div class="loader-wrapper mb-4">
-            <div class="loader"></div>
-            <div class="loader-text">Processing your order...</div>
-        </div>
-        <button id="pay-now" class="btn-pay-now mb-4" onclick="location.href='{% url 'baseapp:create_stripe_session' order.id %}'" style="display:none;">Pay Now</button>
-        {% endif %}
+            <!-- Unified form to update payment and delivery status -->
+            <form method="POST" action="{% url 'baseapp:update_order' order.id %}">
+                {% csrf_token %}
+                <p><strong>Payment Status:</strong>
+                    {% if not order.payment_status %}
+                        <select name="payment_status_{{ order.id }}">
+                            <option value="False" {% if not order.payment_status %}selected{% endif %}>Not Paid</option>
+                            <option value="True">Paid</option>
+                        </select>
+                    {% else %}
+                        <span class="text-green-500 font-semibold">Paid</span>
+                        <!-- <input type="hidden" name="payment_status_{{ order.id }}" value="True"> -->
+                    {% endif %}
+                </p>
+                <p><strong>Delivery Status:</strong>
+                    {% if order.delivery != 'completed' %}
+                        <select name="delivery_status_{{ order.id }}" class="bg-white">
+                            <option value="pending" {% if order.delivery == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if order.delivery == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if order.delivery == 'completed' %}selected{% endif %}>Delivered</option>
+                        </select>
+                    {% else %}
+                        <span class="text-green-800 font-bold"> Delivered</span>
+                        <!-- <input type="hidden" name="delivery_status_{{ order.id }}" value="completed"> -->
+                    {% endif %}
+                </p>
+            {% if order.delivery != 'completed' %}
+                <button type="submit" class="btn font-bold text-lg text-blue-600 bg-blue-100 hover:underline hover:bg-blue-200 mb-1 mt-4">Update Status</button>
+            </form>
+            <p class="text-center font-semibold">OR</p>
+            <form method="POST" action="{% url 'baseapp:cancel_order' order.id %}">
+                {% csrf_token %}
+                <button type="button" class="btn font-bold text-red-600 hover:underline bg-red-100 hover:bg-red-200" data-toggle="modal" data-target="#cancelOrderModal"
+                data-id="{{ order.id }}">Cancel Order</button>
+            </form>
+            {% endif %}
 
-        {% if order.delivery == 'pending' %}
-            <!-- Trigger/Open The Modal -->
-            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#cancelOrderModal" data-id="{{ order.id }}">
-                Cancel Order
-            </button>
-        {% endif %}
+        </div>
     </div>
 </div>
-
 <!-- Cancel Confirmation Modal -->
 <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel"
     aria-hidden="true">
@@ -206,8 +209,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 </script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
     $('#cancelOrderModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);

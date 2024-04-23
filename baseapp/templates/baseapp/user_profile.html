@@ -1,38 +1,39 @@
 {% extends 'main.html' %}
+
 {% block title %}User Profile{% endblock title %}
+
 {% block content %}
-<div class="bg-gray-100">
-    <div class="container mx-auto py-8">
+<div class="style:{background-color:rgb(247, 239, 215);}">
+    <div class="container mx-auto py-6">
         <div class="grid grid-cols-4 sm:grid-cols-12 gap-6 px-4">
             <div class="col-span-4 sm:col-span-3">
-                <div class="bg-white shadow rounded-lg p-6">
+                <div class="bg-gray-50 shadow rounded-lg p-6">
                     <div class="flex flex-col items-center">
                         {% if user.profile_picture %}
                         <img src="{{ user.profile_picture.url }}" alt="{{user.username}}" class="w-32 h-32 bg-gray-300 rounded-full mb-4 shrink-0">
                         {% else %}
-                        <img src="" class="w-32 h-32 bg-gray-300 rounded-full mb-4 shrink-0">
+                        <img src="" class="w-32 h-32 bg-gray-300 rounded-full mb-3 shrink-0">
                         {% endif %}
                         <h1 class="text-xl font-bold text-black">{{ user.first_name }} {{ user.last_name }}</h1>
                         <p class="text-gray-700">@{{ user.username }}</p>
-                        <div class="mt-6 flex flex-wrap gap-4 justify-center">
+                        <div class="mt-5 flex flex-wrap gap-2 justify-center">
                             <a href="{% url 'baseapp:update_profile' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Update Profile</a>
                             <a href="{% url 'baseapp:change_password' %}" class="text-blue-500 hover:text-blue-700 hover:underline">Change Password</a>
                         </div>
                     </div>
-                    <hr class="my-6 border-t border-gray-300">
+                    <hr class="my-4 border-t border-gray-300">
                     <div class="flex flex-col">
                         <span class="text-gray-700 uppercase font-bold tracking-wider mb-2">ACTIVITES</span>
                         <ul>
                             <li class="mb-2"><a href="{% url 'baseapp:upload_history' user.username %}" class="text-blue-500 hover:text-blue-600">Upload History</a></li>
-                            <li class="mb-2"><a href="" class="text-blue-500 hover:text-blue-600">Adoption Request History</a></li>
+                            <li class="mb-2"><a href="" class="text-blue-500 hover:text-blue-600">Request History</a></li>
                             <li class="mb-2"><a href="#" class="text-blue-500 hover:text-blue-600">Order History</a></li>
-                            <li class="mb-2"><a href="#" class="text-blue-500 hover:text-blue-600">Payment History</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
             <div class="col-span-4 sm:col-span-9">
-                <div class="bg-white shadow rounded-lg p-6">
+                <div class="bg-gray-50 shadow rounded-lg p-6">
                     <h2 class="text-xl font-bold text-black mb-4">Bio</h2>
                     <p class="text-gray-700">{{ user.bio }}</p>
 

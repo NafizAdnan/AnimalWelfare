@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://kit.fontawesome.com/5135d630a7.js" crossorigin="anonymous"></script>
   <style>
       .dropdown-menu {
           z-index: 2000 !important; /* Ensure it's on top of other elements */
-          display: block;
+          display: none;
           visibility: hidden;
       }
       .dropdown-menu.show {
@@ -24,8 +24,8 @@
           text-decoration: none;
       }
       .notification {
-          background-color: transparent; /* Changed for icon */
-          color: white;
+          background-color: transparent;
+          color: #124838;
           padding: 4px;
           margin: 0 10px;
           position: relative;
@@ -34,7 +34,7 @@
           font-size: 20px;
       }
       .notification:hover {
-          color: #0b5ed7;
+          color: #e9b142;
       }
       .notification .badge {
           position: absolute;
@@ -46,7 +46,29 @@
           color: white;
       }
       .notification .fa-bell {
-        color: black; /* Change bell icon color to black */
+        color: #124838;
+      }
+      .fa-bell:hover {
+          color: #e9b142;
+      }
+      .see-all-notifications {
+        color: #4CAF50; 
+        font-weight: bold; 
+        display: block; 
+        padding: 10px; 
+        text-align: center; 
+      }
+      .see-all-notifications:hover {
+          color: #388E3C; 
+          text-decoration: underline; 
+      }
+      .notification-item {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+      }
+      .notification-item.unread {
+          background-color: #f5f5f5;
+          font-weight: bold;
       }
   </style>
 </head>
@@ -61,39 +83,44 @@
           </a>
           <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:upload_history' request.user.username %}">
                 <span class="uil uil-file-heart"></span>
-                <span class="ms-1 fs-10 fs-sm-9">Uploads</span>
+                <span class="fs-10 fs-sm-9">Uploads</span>
           </a>
           <a class="ms-2 ms-md-3 submenu" href="{% url 'baseapp:cart' %}"
                 ><span class="uil uil-shopping-cart"></span
-                ><span class="ms-1 fs-10 fs-sm-9">Cart</span>
+                ><span class="fs-10 fs-sm-9">Cart</span>
           </a>
-          
+
           <!-- Notification Dropdown -->
           <div class="dropdown">
-            <a class="notification" href="#" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class='fas fa-bell'></i> <!-- Bell icon -->
-                <span class="badge">{{ unread_count }}</span> <!-- Dynamically rendered -->
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
-                {% for i in notifications %}
-                <li><a class="dropdown-item" href="#">{{ i.message }}</a></li>
-                {% endfor %}
+            <button class="btn btn-sm dropdown-toggle notification" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class='ms-1 fas fa-bell'></i>
+              {% if unread_count > 0 %}
+              <span class="badge">{{ unread_count }}</span>
+              {% endif %}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" id="notificationList">
+              <!-- Notifications will be injected here -->
             </ul>
           </div>
-          
+
           <!-- Account Dropdown -->
           <div class="dropdown">
-              <a class="submenu dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-expanded="false">
-                  <span class="uil uil-user-circle"></span>
-                  <span>Account</span>
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
-                  <li><a class="dropdown-item" href="{% url 'baseapp:user_profile' request.user.username %}">My Profile</a></li>
-                  <li><a class="dropdown-item" href="{% url 'baseapp:change_password' %}">Change Password</a></li>
-                  <li><a class="dropdown-item" href="{% url 'baseapp:upload_history' request.user.username %}">Upload History</a></li>
-                  <li><a class="dropdown-item" href="{% url 'baseapp:signout' %}">Logout</a></li>
-              </ul>
+            <!-- <button class="btn btn-secondary dropdown-toggle submenu" type="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="uil uil-user-circle"></span>
+                <span>Account</span>
+            </button> -->
+            <a class="submenu dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="uil uil-user-circle"></span>
+              <span class="fs-10 fs-sm-9">Account</span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
+                <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:user_profile' request.user.username %}">My Profile</a></li>
+                <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:change_password' %}">Change Password</a></li>
+                <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:upload_history' request.user.username %}">Upload History</a></li>
+                <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:signout' %}">Logout</a></li>
+            </ul>
           </div>
+
         </div>              
             {% else %}
             <div class="d-flex justify-content-end align-items-center">
@@ -174,7 +201,7 @@
                     <li class="nav-item">
                       <a
                         class="nav-link nav-bar-item px-0"
-                        href=""
+                        href="{% url 'baseapp:catalog' %}"
                         title="catalog"
                         >Catalog</a
                       >
@@ -218,63 +245,7 @@
   </main>
 </body>
 
-<script>
-  var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-  var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-    return new bootstrap.Dropdown(dropdownToggleEl);
-  });
-
-  // This ensures dropdowns close on clicking outside
-  window.onclick = function(event) {
-    if (!event.target.matches('.dropdown-toggle')) {
-      var dropdowns = document.getElementsByClassName("dropdown-menu");
-      for (var i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-          openDropdown.classList.remove('show');
-        }
-      }
-    }
-  }
-</script>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      // Functionality to toggle dropdowns and update notification badge accurately
-      const dropdownToggles = document.querySelectorAll('.dropdown-toggle, .notification');
-      dropdownToggles.forEach(dropdownToggle => {
-          dropdownToggle.addEventListener('click', function(event) {
-              event.stopPropagation();
-              const dropdownMenu = this.nextElementSibling;
-              const isOpen = dropdownMenu.classList.contains('show');
-
-              // Close all dropdowns
-              document.querySelectorAll('.dropdown .dropdown-menu').forEach(menu => {
-                  menu.classList.remove('show');
-              });
-
-              // Toggle this dropdown if it was not already open
-              if (!isOpen) {
-                  dropdownMenu.classList.add('show');
-              }
-
-              // If this is the notification dropdown and it's being opened, reset the badge
-              if (this.classList.contains('notification') && !isOpen) {
-                  this.querySelector('.badge').textContent = '0';
-              }
-          });
-      });
-
-      // Close dropdowns when clicking outside
-      document.addEventListener('click', () => {
-          document.querySelectorAll('.dropdown .dropdown-menu').forEach(menu => {
-              menu.classList.remove('show');
-          });
-      });
-  });
-</script>  
-
-<script>
+<!-- <script>
   const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
   const NotificationSocket = new WebSocket(
@@ -295,8 +266,147 @@
   NotificationSocket.onclose = function(e) {
       console.error('Chat socket closed unexpectedly');
   };
+</script> -->
 
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const dropdownButton = document.getElementById('dropdownMenuButton1');
+      if (dropdownButton) {
+          dropdownButton.addEventListener('click', () => {
+              console.log('Dropdown button clicked, fetching notifications...');
+              fetchNotifications(true);
+              updateUnreadNotificationCount();
+          });
+      }
 
+      // Adding event listener to the notification list for handling clicks
+      const notificationList = document.getElementById('notificationList');
+      notificationList.addEventListener('click', function(event) {
+          let targetElement = event.target;
+          while (targetElement && !targetElement.href) {
+              targetElement = targetElement.parentNode;
+          }
+          if (targetElement && targetElement.hasAttribute('data-notification-id')) {
+              event.preventDefault(); // Prevent the link from navigating immediately
+              const notificationId = targetElement.getAttribute('data-notification-id');
+              markAsRead(notificationId, targetElement.href);
+          }
+      });
+  });
+
+  function fetchNotifications(markRead = false) {
+    const url = `{% url 'baseapp:get_notifications' %}?mark_read=${markRead}`;
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        const notificationList = document.getElementById('notificationList');
+        notificationList.innerHTML = '';
+        const notificationsToShow = data.notifications.slice(0, 5);
+        notificationsToShow.forEach(notification => {
+            const listItem = document.createElement('li');
+            listItem.className = 'dropdown-item notification-item' + (notification.read ? '' : ' unread');
+            
+            const link = document.createElement('a');
+            link.setAttribute('data-notification-id', notification.id);
+            if (notification.url) {
+                link.href = notification.url;
+            }
+            
+            // Creating the main content of the notification
+            const titleMessage = document.createElement('div');
+            titleMessage.textContent = `${notification.title} - ${notification.message}`;
+            link.appendChild(titleMessage);
+
+            // Adding a "Tap to view" text
+            const tapToView = document.createElement('span');
+            tapToView.textContent = 'Tap to view';
+            tapToView.style.fontSize = 'smaller';
+            tapToView.style.display = 'block';
+            tapToView.style.color = '#666';
+            link.appendChild(tapToView);
+
+            // Adding the date-time stamp
+            const dateTime = document.createElement('span');
+            dateTime.textContent = new Date(notification.created_at).toLocaleString();
+            dateTime.style.fontSize = 'smaller';
+            dateTime.style.display = 'block';
+            dateTime.style.color = '#999';
+            link.appendChild(dateTime);
+
+            listItem.appendChild(link);
+            notificationList.appendChild(listItem);
+        });
+        appendSeeAllNotificationsLink(notificationList);
+    })
+    .catch(error => console.error('Error loading notifications:', error));
+  }
+
+  function markAsRead(notificationId, redirectUrl) {
+      const url = `{% url 'baseapp:mark_as_read' 999 %}`.replace('999', notificationId);
+      fetch(url)
+      .then(response => {
+          if (response.ok) {
+              console.log('Notification marked as read.');
+              if (redirectUrl) {
+                  window.location.href = redirectUrl; // Navigate to the link after marking as read
+              }
+              // fetchNotifications();  // Refresh the list
+          }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  function appendSeeAllNotificationsLink(notificationList) {
+      const seeAllItem = document.createElement('li');
+      seeAllItem.className = 'dropdown-item';
+      const seeAllLink = document.createElement('a');
+      seeAllLink.href = '{% url "baseapp:notification_list" %}';
+      seeAllLink.textContent = 'See All Notifications';
+      seeAllLink.className = 'see-all-notifications';
+      seeAllItem.appendChild(seeAllLink);
+      notificationList.appendChild(seeAllItem);
+  }
+
+  function updateUnreadNotificationCount() {
+      fetch("{% url 'baseapp:unread_count' %}")
+      .then(response => response.json())
+      .then(data => {
+          const badge = document.querySelector('.notification .badge');
+          if (badge) {
+              badge.textContent = data.unread_count;  // Update the count dynamically
+          }
+      })
+      .catch(error => console.error('Error updating unread notification count:', error));
+  }
+
+  // Fetching notifications every 30 seconds to update the list
+  setInterval(fetchNotifications, 30000);
+  document.addEventListener('DOMContentLoaded', fetchNotifications);  // Initial fetch on page load
 </script>
 
+<script>
+  const wsStart = 'ws://';
+  const endpoint = wsStart + window.location.host + '/ws/notifications/';
+  const socket = new WebSocket(endpoint);
+  
+  socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    console.log('Notification:', data.message);
+    // Calling fetchNotifications to update the list
+    fetchNotifications();
+  }
+  
+  socket.onopen = function(e) {
+    console.log('WebSocket open', e);
+  }
+  
+  socket.onerror = function(e) {
+    console.log('WebSocket error', e);
+  }
+  
+  socket.onclose = function(e) {
+    console.log('WebSocket closed', e);
+  }
+</script>
+  
 </html>

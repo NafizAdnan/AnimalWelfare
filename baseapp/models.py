@@ -6,8 +6,7 @@ from datetime import date
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.utils import timezone
-
-from baseapp import forms
+import uuid
 
 
 def user_directory_path(instance, filename):
@@ -129,7 +128,6 @@ class Animal(models.Model):
     date_uploaded = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
     requested_by = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='requested_animals')
-    r_contact = models.CharField(max_length=20, null=True, blank=True)
     requested = models.BooleanField(default=False)
     completed = models.BooleanField(default=False)
 
@@ -148,14 +146,15 @@ class Animal(models.Model):
         return reverse('animal-detail',args=(self.id))
 
 class AnimalRequest(models.Model):
-    animal = models.ManyToManyField(Animal, related_name='request')
-    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='requests')
+    animal = models.ForeignKey(Animal, related_name='requests', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='animal_requests', on_delete=models.CASCADE)
     contact = models.CharField(max_length=20)
     date_requested = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, default='pending')
+    status = models.CharField(max_length=20, default='active')
+    request_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
-        return f"{self.user.username} requested {self.animal.title}"
+        return f"{self.user.username} requested {self.animal.title} - {self.status}"
 
 class Accessories(models.Model):
     type = models.CharField(max_length=20)
@@ -194,6 +193,7 @@ class Ticket(models.Model):
     status = models.CharField(max_length=6, choices=STATUS_CHOICES, default='open')
     created_at = models.DateTimeField(auto_now_add=True)
     accepted = models.BooleanField(default=False)
+    accepted_by = models.ForeignKey(User, related_name='accepted_tickets', on_delete=models.SET_NULL, null=True, blank=True)
     # assigned_to = models.ForeignKey(User, related_name='assigned_tickets', on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'is_staff': True})
 
     def __str__(self):
@@ -207,6 +207,28 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message by {self.user.username} on {self.created_at}"
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    read = models.BooleanField(default=False)
+    url = models.URLField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification for {self.recipient.username} - {self.title}'
+
+class ChatRoom(models.Model):
+    request = models.OneToOneField(AnimalRequest, related_name='chat_room', on_delete=models.CASCADE)
+    is_open = models.BooleanField(default=True)
+
+class ChatMessage(models.Model):
+    chat_room = models.ForeignKey(ChatRoom, related_name='messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='messages', on_delete=models.CASCADE)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')

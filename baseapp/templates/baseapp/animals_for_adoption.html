@@ -1,21 +1,37 @@
 {% extends 'main.html' %}
 
-{% block title %}For Adoption{% endblock title %}
+{% block title %}Animal for Adoption{% endblock title %}
 
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<!-- Tabs/Navs -->
+<div class="mb-n2 mt-1 ml-10 flex justify-between">
+    <ul class="flex border-b">
+        <li class="-mb-px mr-1">
+            <a href="{% url 'baseapp:catalog' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">All Categories</a>
+        </li>
+        <li class="mr-1">
+            <a href="{% url 'baseapp:animals_for_adoption' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">For Adoption</a>
+        </li>
+        <li class="mr-1">
+            <a href="{% url 'baseapp:animals_for_daycare' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">For Daycare</a>
+        </li>
+        <li class="mr-1">
+            <a href="{% url 'baseapp:products_for_sale' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Accessories</a>
+        </li>
+    </ul>
+</div>
 
-<div class="text-center p-10">
-    <h1 class="font-bold text-4xl mb-4">Available for adoption</h1>
-    <p class="text-xl">Find your favorite one!</p>
+<div class="text-center p-4">
+    <h1 class="font-bold text-4xl mb-2 text-gray-700">Available for Adoption</h1>
+    <p class="text-xl text-gray-600">Find your favorite one!</p>
 </div>
 
 <!-- Grid Section -->
-<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mt-10 mb-5">
+<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mb-10 pb-4">
 
     {% for animal in animals %}
     <!-- Product Card -->
-    <div class="w-72 bg-white shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
+    <div class="w-72 bg-gray-100 shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
         <a href="{% url 'baseapp:animal_detail' animal.id %}">
             {% if animal.picture %}
             <img src="{{ animal.picture.url }}" alt="{{ animal.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
@@ -24,7 +40,7 @@
             {% endif %}
             <div class="px-4 py-3">
                 <h3 class="text-lg font-bold text-black truncate capitalize">{{ animal.title }}</h3>
-                <p class="text-gray-600 text-sm my-1">{{ animal.stock }} Available </p>
+                <p class="text-gray-600 text-sm my-1">For {{animal.available_for}} </p>
             </div>
         </a>
     </div>
@@ -34,12 +50,5 @@
     {% endfor %}
 
 </section>
-
-<!-- Add Product Button -->
-<!-- <div class="text-right pr-10 pt-5">
-    <a href="{% url 'baseapp:add_animal' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-        + Add Product
-    </a>
-</div> -->
 
 {% endblock content %}
