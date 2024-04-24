@@ -752,6 +752,7 @@ def complete_request(request, request_id):
         url = reverse('baseapp:animal_detail', kwargs={'id':animal.id})
         notify_user(request_to_complete.user.username, title, message, url)
         notify_superuser(title, message, url)
+        return redirect('baseapp:animal_detail', id=animal.id)
     else:
         title = "Request Completed!!"
         message = f"{request.user.first_name} {request.user.last_name} has marked the {animal.available_for} request for {animal.title} as completed."
