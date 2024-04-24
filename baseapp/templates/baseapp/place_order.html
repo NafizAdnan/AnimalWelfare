@@ -8,11 +8,14 @@
     /* Base styles */
     body, h1, h2, p, label, input, button {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
     }
     
     .order-container {
         width: 80%;
         margin: auto;
+        margin-top: -50px;
+        margin-left: 120px;
     }
     
     /* Order Summary Styles */
@@ -111,6 +114,7 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         transition: border-color 0.3s;
+        background-color: #fff;
     }
     
     .form-field input:focus {
@@ -212,13 +216,16 @@
     .payment-method {
         display: flex;
         align-items: center;
-        margin-right: 30px; /* Space between the payment options */
+        margin-right: 30px;
         margin-left: 15px;
     }
 
     .payment-method label {
         margin-left: 8px;
         font-size: 14px;
+    }
+    .payment-method input {
+        margin-right: 8px;
     }
     </style>
 {% endblock extra_css %}
@@ -229,10 +236,10 @@
   <h1>CHECKOUT</h1>
 </div>
 
-<div class="order-container mx-auto">
+<div class="order-container">
     <!-- Order Summary Section -->
     <div class="product-summary">
-        <div class="summary-header text-center mb-6">
+        <div class="summary-header text-center mb-4">
             <h1 class="title">Your Order Summary</h1>
         </div>
         <div class="product-details-header">
@@ -251,7 +258,7 @@
             <div class="item-details">
                 <p class="item-title">{{ item.accessory.title }}</p>
                 <div class="item-info">
-                    <div class="price">Price: ${{ item.accessory.price }} each</div>
+                    <div class="price">Price: {{ item.accessory.price }} BDT each</div>
                     <div class="quantity">Quantity: <strong>{{ item.quantity }}</strong></div>
                 </div>
             </div>
@@ -260,12 +267,12 @@
         <!-- Total Price -->
         <div class="total-price">
             <span class="grand-total">Grand Total</span>
-            <span class="amount">${{ total_price }}</span>
+            <span class="amount">{{ total_price }} BDT</span>
         </div>
     </div>
     <!-- User Details Form Section -->
     <div class="shipping-info">
-        <h2 class="form-title text-center mb-6">Shipping Information</h2>
+        <h2 class="form-title text-center mb-3">Shipping Information</h2>
         <form action="{% url 'baseapp:place_order' %}" method="POST">
             {% csrf_token %}
             <!-- Form fields -->
@@ -288,15 +295,10 @@
                 <label for="city">City</label>
                 <input name="city" id="city" type="text" placeholder="Enter your city" required>
             </div>
-            <!-- State Field -->
-            <div class="form-field">
-                <label for="state">State</label>
-                <input name="state" id="state" type="text" placeholder="Enter your city" required>
-            </div>
              <!-- Address Field -->
             <div class="form-field">
                 <label for="address">Address</label>
-                <input name="address" id="address" type="text" placeholder="Enter your city" required>
+                <input name="address" id="address" type="text" placeholder="Enter your house address" required>
             </div>
             <!-- Payment Method Field -->
             <div class="form-field payment-methods">

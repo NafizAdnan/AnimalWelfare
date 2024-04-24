@@ -1,0 +1,75 @@
+{% extends 'main.html' %}
+
+{% block title %}Approved Uploads{% endblock title %}
+
+{% block content %}
+<div class="mx-auto px-4 sm:px-8 py-2 mb-10">
+    <!-- Tabs/Navs -->
+    <div class="mb-3">
+        <ul class="flex border-b">
+            <li class="-mb-px mr-1">
+                <a href="{% url 'baseapp:approved_uploads' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Approved</a>
+            </li>
+            <li class="mr-1">
+                <a href="{% url 'baseapp:manage_animals' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Pending Approval</a>
+            </li>
+            <li class="mr-1">
+                <a href="{% url 'baseapp:active_requests' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">Active Requests</a>
+            </li>
+            <li class="mr-1">
+                <a href="{% url 'baseapp:completed_requests' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Completed Requests</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Table Title -->
+    <h2 class="text-2xl font-bold mb-3 text-black text-center">Approved Uploads</h2>
+
+    <!-- Animals Table -->
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg mb-10">
+        <table class="w-full text-sm text-left text-gray-800">
+            <thead class="text-sm text-gray-700 uppercase bg-gray-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3">Title</th>
+                    <th scope="col" class="px-6 py-3">Age</th>
+                    <th scope="col" class="px-6 py-3">Breed</th>
+                    <th scope="col" class="px-6 py-3">Location</th>
+                    <th scope="col" class="px-6 py-3">Requested For</th>
+                    <th scope="col" class="px-6 py-3">Provided By</th>
+                    <th scope="col" class="px-6 py-3">Requested By</th>
+                    <th scope="col" class="px-6 py-3">Request Date</th>
+                    <th scope="col" class="px-6 py-3">Request Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in active_requests %}
+                <tr class="bg-gray-50 border-b text-lg hover:bg-gray-100">
+                    <td class="px-6 py-4 font-medium text-blue-500 hover:underline whitespace-nowrap">
+                        <a href="{% url 'baseapp:animal_detail' item.animal.id %}">{{ item.animal.title }}</a>
+                    </td>
+                    <td class="px-6 py-4">{{ item.animal.age }} months</td>
+                    <td class="px-6 py-4">{{ item.animal.breed }}</td>
+                    <td class="px-6 py-4">{{ item.animal.location }}</td>
+                    <td class="px-6 py-4">{{ item.animal.available_for }}</td>
+                    <td class="px-6 py-4">{{ item.animal.user.username }}</td>
+                    <td class="px-6 py-4">{{ item.user.username }}</td>
+                    <td class="px-6 py-4">{{ item.date_requested|date:"Y-m-d" }}</td>
+                    {% if item.status == 'active' %}
+                    <td class="px-6 py-4 text-yellow-500 font-semibold text-center">In Progress</td>
+                    {% elif item.status == 'completed' %}
+                    <td class="px-6 py-4 text-green-500 font-semibold text-center">Completed</td>
+                    {% else %}
+                    <td class="px-6 py-4 text-red-500 font-semibold text-center">Cancelled</td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center">No request history found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock content %}

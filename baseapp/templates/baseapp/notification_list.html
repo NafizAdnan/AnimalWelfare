@@ -1,0 +1,106 @@
+{% extends 'main.html' %}
+
+{% block title %}All Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notifications-container {
+        max-width: 800px;
+        margin: 40px auto 200px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .notification-item {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: default;
+    }
+    .notification-item.unread {
+        background-color: #f9f9f9;
+        font-weight: bold;
+    }
+    .notification-title, .notification-message {
+        font-size: 16px;
+        color: #666;
+        cursor: pointer;
+    }
+    .notification-date {
+        font-size: 14px;
+        color: #8d8c8c;
+        text-align: right;
+        margin-top: 5px;
+    }
+    .mark-as-read {
+        text-decoration: none;
+        padding: 5px 10px;
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 5px;
+        font-size: 13px;
+        display: inline-block;
+        cursor: pointer;
+        font-weight: normal;
+    }
+    .mark-all-as-read {
+        text-align: right;
+        margin-bottom: 10px;
+        color: #2d37a4;
+        font-size: small;
+    }
+    .mark-all-as-read:hover {
+        text-decoration: underline;
+        color: #5462ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <h2 class="text-black font-bold ml-2">All Notifications</h2>
+    <div class="mark-all-as-read">
+        <a href="{% url 'baseapp:mark_all_as_read' %}">✅ Mark All as Read</a>
+    </div>
+    {% for notification in notifications %}
+    <div class="notification-item {% if not notification.read %}unread{% endif %}">
+        <div class="notification-content"
+             onclick="handleNotificationClick('{{ notification.id }}', '{{ notification.url|default_if_none:'' }}')">
+            <div class="notification-title">{{ notification.title }}</div>
+            <div class="notification-message">{{ notification.message }}</div>
+            <div class="notification-date">{{ notification.created_at|date:"Y-m-d H:i" }}</div>
+        </div>
+        {% if not notification.read %}
+            <a href="#" onclick="markAsRead('{{ notification.id }}', '{{ notification.url|default_if_none:'' }}'); return false;" class="mark-as-read">Mark as Read</a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-gray-700 text-center font-semibold">No notifications found.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function handleNotificationClick(notificationId, url) {
+    if (!url) {
+        alert('No URL associated with this notification.');
+        return;
+    }
+    markAsRead(notificationId, url);
+}
+
+function markAsRead(notificationId, url) {
+    const markAsReadUrl = `{% url 'baseapp:mark_as_read' 999 %}`.replace('999', notificationId);
+    fetch(markAsReadUrl)
+    .then(response => {
+        if (response.ok) {
+            window.location.href = url; // Redirect after marking as read
+        } else {
+            console.error('Failed to mark notification as read');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}

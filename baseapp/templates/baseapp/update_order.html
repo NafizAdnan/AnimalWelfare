@@ -1,0 +1,221 @@
+{% extends 'main.html' %}
+
+{% block title %}Order Status - {{order.id}}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    
+    .order-status {
+        font-family: 'Roboto', sans-serif;
+        text-align: center;
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f9f9f9;
+    }
+    
+    .order-details p {
+        font-size: 1rem;
+        text-align: left;
+        color: #333;
+        margin: 0.5rem 0;
+    }
+    
+    .order-details strong {
+        font-weight: 600;
+    }
+    
+    .order-items h3, .order-total h3 {
+        font-weight: bold;
+        text-align: left;
+        font-size: large;
+        color: #333;
+    }
+    
+    .order-items pre, .order-total p {
+        font-size: 1rem;
+        color: #333;
+        margin: 0.5rem 0;
+        background-color: #f2f2f2;
+        padding: 0.5rem;
+        border-radius: 4px;
+        text-align: left;
+    }
+    
+    .loader-wrapper {
+        position: relative;
+        width: 100%;
+        height: 40px;
+        background-color: #ddd;
+        margin-top: 2rem;
+    }
+    
+    .loader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background-color: #4CAF50;
+        animation: fill 10s forwards;
+    }
+    
+    @keyframes fill {
+        0% { width: 0%; }
+        100% { width: 100%; }
+    }
+    
+    .loader-text {
+        font-weight: 700;
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+    }
+    
+    .btn-pay-now {
+        font-weight: 700;
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        margin-top: 2rem;
+        border: none;
+        border-radius: 4px;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+    
+    .btn-pay-now:hover {
+        background-color: #45a049;
+        transform: translateY(-3px);
+    }
+    
+    .link {
+        color: #212020;
+        text-decoration: none;
+        background-color: rgb(187, 242, 132);
+    }
+    .link:hover {
+        text-decoration: underline; /* Underline on hover */
+        background-color: royalblue;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-status-container">
+    <div class="order-status">
+        <h2 class="font-bold text-gray-900 text-xl">Order Status</h2>
+        <br>
+        <div class="order-details">
+            <div class="order-items">
+                <h3>Items Ordered:</h3>
+                <pre>{{ order.items_summary }}</pre>
+            </div>
+            <div class="order-total">
+                <h3>Total Cost:</h3>
+                <p>{{ order.total_cost }} BDT</p>
+            </div>
+            <p><strong>Order ID:</strong> <span>{{ order.id }}</span></p>
+            <p><strong>Date:</strong> <span>{{order.created_at}}</span></p>
+            <p><strong>User:</strong> <span>{{ order.user.username }}</span></p>
+            <p><strong>Name:</strong> <span>{{ order.name }}</span></p>
+            <p><strong>Email:</strong> <span>{{ order.email }}</span></p>
+            <p><strong>Phone:</strong> <span>{{ order.phone }}</span></p>
+            <p><strong>City:</strong> <span>{{ order.city }}</span></p>
+            <p><strong>Address:</strong> <span>{{ order.address }}</span></p>
+            <!-- Unified form to update payment and delivery status -->
+            <form method="POST" action="{% url 'baseapp:update_order' order.id %}">
+                {% csrf_token %}
+                <p><strong>Payment Status:</strong>
+                    {% if not order.payment_status %}
+                        <select name="payment_status_{{ order.id }}">
+                            <option value="False" {% if not order.payment_status %}selected{% endif %}>Not Paid</option>
+                            <option value="True">Paid</option>
+                        </select>
+                    {% else %}
+                        <span class="text-green-500 font-semibold">Paid</span>
+                        <!-- <input type="hidden" name="payment_status_{{ order.id }}" value="True"> -->
+                    {% endif %}
+                </p>
+                <p><strong>Delivery Status:</strong>
+                    {% if order.delivery != 'completed' %}
+                        <select name="delivery_status_{{ order.id }}" class="bg-white">
+                            <option value="pending" {% if order.delivery == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if order.delivery == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if order.delivery == 'completed' %}selected{% endif %}>Delivered</option>
+                        </select>
+                    {% else %}
+                        <span class="text-green-800 font-bold"> Delivered</span>
+                        <!-- <input type="hidden" name="delivery_status_{{ order.id }}" value="completed"> -->
+                    {% endif %}
+                </p>
+            {% if order.delivery != 'completed' %}
+                <button type="submit" class="btn font-bold text-lg text-blue-600 bg-blue-100 hover:underline hover:bg-blue-200 mb-1 mt-4">Update Status</button>
+            </form>
+            <p class="text-center font-semibold">OR</p>
+            <form method="POST" action="{% url 'baseapp:cancel_order' order.id %}">
+                {% csrf_token %}
+                <button type="button" class="btn font-bold text-red-600 hover:underline bg-red-100 hover:bg-red-200" data-toggle="modal" data-target="#cancelOrderModal"
+                data-id="{{ order.id }}">Cancel Order</button>
+            </form>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog my-modal-position">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black" id="cancelOrderModalLabel">Confirm Cancellation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body text-gray-900">
+                Are you sure you want to Cancel your Order? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form method="POST" id="cancelOrderForm" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" id="modalOrderId" value="">
+                    <button type="submit" class="btn btn-danger">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', (event) => {
+    setTimeout(() => {
+        document.querySelector('.loader-wrapper').style.display = 'none';
+        document.getElementById('pay-now').style.display = 'block';
+    }, 5000); // 10 seconds delay
+});
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+    $('#cancelOrderModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var orderId = button.data('id');
+        var modal = $(this);
+        modal.find('.modal-footer #modalOrderId').val(orderId);
+        var deleteFormAction = "{% url 'baseapp:cancel_order' 999999 %}".replace('999999', orderId);
+        modal.find("#cancelOrderForm").attr("action", deleteFormAction);
+    });
+</script>
+{% endblock %}

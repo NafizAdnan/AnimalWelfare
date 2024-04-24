@@ -1,72 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Cancelled</title>
-    <style>
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #ffebee;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
-        .container {
-            background-color: #fff;
-            padding: 40px 60px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transform: translateY(-50px);
-        }
-        .header {
-            background-color: #d32f2f;
-            color: white;
-            padding: 20px;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            margin: -40px -60px 30px -60px;
-        }
-        h1 {
-            margin: 0;
-        }
-        p {
-            color: #666;
-            line-height: 1.6;
-        }
-        .button {
-            background-color: #d32f2f;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            display: inline-block;
-            border: none;
-            border-radius: 5px;
-            margin-top: 25px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .button:hover {
-            background-color: #b71c1c;
-        }
-        .icon {
-            font-size: 48px;
-            margin-top: -10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <span class="icon">✖</span>
-            <h1>Payment Cancelled</h1>
-        </div>
-        <p>Your payment has been cancelled successfully. If this is an error, please try again or contact support.</p>
-        <a href="/" class="button">Return to Home</a>
+{% extends 'main.html' %}
+
+{% block title %}Payment Cancellation{% endblock title %}
+
+{% block content %}
+<style>
+.payment-cancellation {
+    background: #fff;
+    color: #333;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    text-align: center;
+    padding: 50px 0;
+}
+.cancellation-container {
+    max-width: 800px;
+    margin: auto;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.icon-cross {
+    width: 100px;
+    height: 100px;
+    display: block;
+    margin: 20px auto;
+}
+.crossmark-circle {
+    fill: none;
+    stroke: #dc3545;
+    stroke-width: 2;
+}
+.crossmark-x {
+    fill: none;
+    stroke: #dc3545;
+    stroke-width: 4;
+}
+.cancellation-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #dc3545;
+    margin: 20px 0;
+}
+.cancellation-message {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+.btn-home {
+    background-color: #dc3545;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+.btn-home:hover {
+    background-color: #c82333;
+}
+
+</style>
+
+<div class="payment-cancellation">
+    <div class="cancellation-container">
+        <svg class="icon-cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="crossmark-circle" cx="26" cy="26" r="25" fill="none" stroke="#dc3545" stroke-width="2"/>
+            <g class="crossmark-x">
+                <line x1="15" y1="15" x2="37" y2="37" stroke="#dc3545" stroke-width="4"/>
+                <line x1="37" y1="15" x2="15" y2="37" stroke="#dc3545" stroke-width="4"/>
+            </g>
+        </svg>
+        <h2 class="cancellation-title">Payment Cancelled</h2>
+        <p class="cancellation-message">Your transaction has been cancelled. If this is an error, please try again or contact support.</p>
+        <a href="/" class="btn-home">Return to Homepage</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock content %}

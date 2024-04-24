@@ -4,9 +4,8 @@
 
 {% block content %}
 
-<div class="text-center p-10">
-    <h1 class="font-bold text-4xl mb-4">Search Products:</h1>
-    <p class="text-xl"></p>
+<div class="text-center p-5">
+    <h1 class="font-bold text-4xl text-gray-700">Searched Products</h1>
 </div>
 
 
@@ -16,17 +15,17 @@
 </form>
 <br>
 <!-- Sorting Options -->
-<a href="?sort_by=price_low_to_high{% if query %}&q={{ query }}{% endif %}">Sort by Price (Low to High)</a>
-<a href="?sort_by=price_high_to_low{% if query %}&q={{ query }}{% endif %}">Sort by Price (High to Low)</a>
+<p class="font-medium text-blue-600 hover:underline hover: text-blue-800"><a href="?sort_by=price_low_to_high{% if query %}&q={{ query }}{% endif %}">Sort by Price (Low to High)</a></p>
+<p class="font-medium text-blue-600 hover:underline hover: text-blue-800"><a href="?sort_by=price_high_to_low{% if query %}&q={{ query }}{% endif %}">Sort by Price (High to Low)</a></p>
 <!-- Add more sorting options as needed -->
 
 <!-- Grid Section -->
-<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mt-10 mb-5">
+<section class="mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-y-20 gap-x-14 mt-5 mb-10">
 
     {% for product in products %}
     <!-- Product Card -->
         <div class="w-72 bg-white shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
-        <a href="">
+        <a href="{% url 'baseapp:product_detail' product.id %}">
             {% if product.picture %}
             <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
             {% else %}
@@ -36,7 +35,7 @@
                 <h3 class="text-lg font-bold text-black truncate capitalize">{{ product.title }}</h3>
                 <p class="text-gray-600 text-sm my-1">{{ product.description|truncatewords:15 }}</p>
                 <div class="flex justify-between items-center">
-                    <span class="text-lg font-semibold text-black">${{ product.price }}</span>
+                    <span class="text-lg font-semibold text-black">{{ product.price }} BDT</span>
                     <span class="text-gray-500 text-xs">{{ product.stock }} in stock</span>
                 </div>
             </div>

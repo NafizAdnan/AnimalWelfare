@@ -1,30 +1,34 @@
 {% extends 'main.html' %}
 
-{% block content %}
+{% block title %}Approved Uploads{% endblock title %}
 
-<div class="container mx-auto px-4 sm:px-8 py-8 bg-gray-100">
+{% block content %}
+<div class="mx-auto px-4 sm:px-8 py-2 mb-10">
     <!-- Tabs/Navs -->
-    <div class="mb-8">
+    <div class="mb-3">
         <ul class="flex border-b">
             <li class="-mb-px mr-1">
                 <a href="{% url 'baseapp:approved_uploads' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">Approved</a>
             </li>
             <li class="mr-1">
-                <a href="{% url 'baseapp:manage_animals' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Pending</a>
+                <a href="{% url 'baseapp:manage_animals' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Pending Approval</a>
             </li>
             <li class="mr-1">
-                <a href="" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Completed</a>
+                <a href="{% url 'baseapp:active_requests' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Active Requests</a>
+            </li>
+            <li class="mr-1">
+                <a href="{% url 'baseapp:completed_requests' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">Completed Requests</a>
             </li>
         </ul>
     </div>
 
     <!-- Table Title -->
-    <h2 class="text-lg font-semibold mb-4 text-black">Animal Uploads</h2>
+    <h2 class="text-2xl font-bold mb-3 text-black text-center">Approved Uploads</h2>
 
     <!-- Animals Table -->
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left text-gray-500">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg mb-10">
+        <table class="w-full text-sm text-left text-gray-800">
+            <thead class="text-sm text-gray-700 uppercase bg-gray-200">
                 <tr>
                     <th scope="col" class="px-6 py-3">Action</th>
                     <th scope="col" class="px-6 py-3">Title</th>
@@ -39,12 +43,12 @@
             </thead>
             <tbody>
                 {% for animal in animals %}
-                <tr class="bg-white border-b hover:bg-gray-100">
-                    <td class="px-6 py-4 text-right space-x-2">
-                        <a href="{% url 'baseapp:update_animal' animal.id %}" class="btn btn-primary">Edit</a>
+                <tr class="bg-gray-50 border-b text-lg hover:bg-gray-100">
+                    <td class="px-6 py-4 text-left">
+                        <a href="{% url 'baseapp:update_animal' animal.id %}" class="btn btn-primary mb-1">Edit</a>
                         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" data-id="{{ animal.id }}" data-name="{{ animal.title }}">Delete</button>
                     </td>
-                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ animal.title }}</td>
+                    <td class="px-6 py-4 font-medium text-blue-500 hover:underline whitespace-nowrap"><a href="{% url 'baseapp:animal_detail' animal.id %}">{{ animal.title }}</a></td>
                     <td class="px-6 py-4">{{ animal.age }} months</td>
                     <td class="px-6 py-4">{{ animal.breed }}</td>
                     <td class="px-6 py-4">{{ animal.location }}</td>
@@ -76,12 +80,12 @@
     <div class="modal-dialog my-modal-position">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                <h5 class="modal-title text-black" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body text-gray-900">
                 Are you sure you want to delete "<span id="deleteAnimalName"></span>"? This action cannot be undone.
             </div>
             <div class="modal-footer">

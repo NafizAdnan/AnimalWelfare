@@ -4,12 +4,29 @@
 {% block title %}On Sale{% endblock %}
 
 {% block content %}
-
-<div class="text-center p-10">
-    <h1 class="font-bold text-4xl mb-4">Petcare Products:</h1>
+<!-- Tabs/Navs -->
+<div class="mb-n2 mt-1 ml-10 flex justify-between">
+  <ul class="flex border-b">
+      <li class="-mb-px mr-1">
+          <a href="{% url 'baseapp:catalog' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">All Categories</a>
+      </li>
+      <li class="mr-1">
+          <a href="{% url 'baseapp:animals_for_adoption' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">For Adoption</a>
+      </li>
+      <li class="mr-1">
+          <a href="{% url 'baseapp:animals_for_daycare' %}" class="inline-block py-2 px-4 text-gray-500 hover:text-blue-800 font-semibold">For Daycare</a>
+      </li>
+      <li class="mr-1">
+          <a href="{% url 'baseapp:products_for_sale' %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">Accessories</a>
+      </li>
+  </ul>
 </div>
 
-<form class="d-flex justify-center gap-4 mb-5" role="search" method="GET">
+<div class="text-center p-4 text-gray-700">
+    <h1 class="font-bold text-4xl">Petcare Products</h1>
+</div>
+
+<form class="d-flex justify-center gap-2 mb-3" role="search" method="GET">
     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
     <input class="form-control me-2" type="number" placeholder="Min Price" aria-label="Min Price" name="min_price">
     <input class="form-control me-2" type="number" placeholder="Max Price" aria-label="Max Price" name="max_price">
@@ -44,35 +61,6 @@
 .add-to-cart-button:hover {
     background-color: #0056b3;
 }
-
-/* Header and View Cart Button Styles */
-.header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 20px;
-}
-
-.view-cart-wrapper {
-    margin-bottom: 5px;
-}
-
-.view-cart-button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: bold;
-    border-radius: 5px;
-    text-align: center;
-    display: inline-block;
-    transition: background-color 0.3s ease;
-}
-
-.view-cart-button:hover {
-    background-color: #0056b3;
-}
-
-
 
 /* Professional Dropdown CSS */
 .pro-dropdown {
@@ -161,38 +149,29 @@
 </div>
 -->
 
-<!-- Header Section with View Cart Button -->
-<header class="header">
-    <div class="view-cart-wrapper">
-        <a href="{% url 'baseapp:cart' %}" class="view-cart-button">View Cart</a>
-    </div>
-</header>
-
 <!-- Grid Section -->
-<section class="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center gap-y-10 gap-x-6 mt-5">
+<section class="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center gap-y-10 gap-x-6 mt-5 mb-4">
     {% for product in products %}
     <!-- Product Card -->
-    <div class="w-72 bg-white shadow-lg border border-gray-200 rounded-lg overflow-hidden">
-        <!-- Image -->
-        {% if product.picture %}
-        <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-60 w-full object-cover" />
-        {% else %}
-        <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-60 w-full object-cover" />
-        {% endif %}
-        <!-- Details -->
-        <div class="p-4">
-            <a href="{% url 'baseapp:product_detail' product.pk %}" class="text-lg font-bold truncate">{{ product.title }}</a>
-            <div class="flex justify-between items-center mt-2">
-                <span class="text-blue-500 font-bold">${{ product.price }}</span>
-                <form action="{% url 'baseapp:add_to_cart' product.id %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="quantity" value="1" min="1">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Add to Cart
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div class="w-72 bg-gray-100 shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl">
+      <a href="{% url 'baseapp:product_detail' product.id %}">
+          {% if product.picture %}
+          <img src="{{ product.picture.url }}" alt="{{ product.title }}" class="h-80 w-72 object-cover rounded-t-xl" />
+          {% else %}
+          <img src="https://via.placeholder.com/288x400" alt="No image available" class="h-80 w-72 object-cover rounded-t-xl" />
+          {% endif %}
+          <div class="px-4 py-3">
+              <h3 class="text-lg font-bold text-black truncate capitalize">{{ product.title }}</h3>
+              <p class="text-gray-600 text-sm my-1 mb-2">{{product.price}} BDT </p>
+              <form action="{% url 'baseapp:add_to_cart' product.id %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="quantity" value="1" min="1">
+                  <button type="submit" class="add-to-cart-button">
+                      Add to Cart
+                  </button>
+              </form>
+          </div>
+      </a>
     </div>
     {% empty %}
     <div>No accessories found.</div>
