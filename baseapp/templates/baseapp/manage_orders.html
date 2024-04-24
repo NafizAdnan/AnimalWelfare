@@ -131,7 +131,7 @@
                 <td class="text-gray-800">{{ order.phone }}</td>
                 <td class="text-gray-800">{{ order.city }}</td>
                 <td class="text-gray-800">{{ order.address }}</td>
-                <td>
+                <td class="text-gray-800">
                     {% if not order.payment_status %}
                         <select name="payment_status_{{ order.id }}" class="bg-gray-100">
                             <option value="False" {% if not order.payment_status %}selected{% endif %}>Not Paid</option>
@@ -159,8 +159,10 @@
                 <td class="text-gray-800">
                     <button type="submit" class="btn font-bold text-blue-600 bg-blue-100 hover:underline hover:bg-blue-200 mb-1">Update</button>
                     {% if order.delivery == 'pending' %}
-                    <button type="button" class="btn font-bold text-red-600 hover:underline bg-red-100 hover:bg-red-200" data-toggle="modal" data-target="#cancelOrderModal"
-                        data-id="{{ order.id }}">Cancel</button>
+                    <!-- Trigger/Open The Modal -->
+                    <button type="button" class="btn font-bold text-red-600 hover:underline bg-red-100 hover:bg-red-200" data-toggle="modal" data-target="#cancelOrderModal" data-id="{{ order.id }}">
+                        Cancel
+                    </button>
                     {% endif %}
                 </td>
             </tr>
@@ -181,7 +183,7 @@
                 </button>
             </div>
             <div class="modal-body text-gray-900">
-                Are you sure you want to Cancel your Order "<span id="modalOrderId"></span>"? This action cannot be undone.
+                Are you sure you want to Cancel your Order? This action cannot be undone.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -194,18 +196,18 @@
         </div>
     </div>
 </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
     $('#cancelOrderModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var orderId = button.data('id');
         var modal = $(this);
-        modal.find('.modal-body #modalOrderId').val(orderId);
+        modal.find('.modal-footer #modalOrderId').val(orderId);
         var deleteFormAction = "{% url 'baseapp:cancel_order' 999999 %}".replace('999999', orderId);
         modal.find("#cancelOrderForm").attr("action", deleteFormAction);
     });

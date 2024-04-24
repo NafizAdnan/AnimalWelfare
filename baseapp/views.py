@@ -159,8 +159,10 @@ def signup(request):
             messages.error(request, "Password must be atleast 6 characters long.")
             return redirect('baseapp:signup')
         
-        if not any(char.isdigit() or char.isupper() or char.islower() for char in pass1):
-            messages.error(request, "Password must contain atleast one uppercase, one lowercase and one digit.")
+        if not any(char.isdigit() for char in pass1) \
+            or not any(char.isupper() for char in pass1) \
+            or not any(char.islower() for char in pass1):
+            messages.error(request, "Password must contain atleast one uppercase, one lowercase character, and one digit.")
             return redirect('baseapp:signup')
         
         if pass1 != pass2:
@@ -243,6 +245,16 @@ def change_password(request):
 
         if not user.check_password(old_pass):
             messages.error(request, "Old password is incorrect.")
+            return redirect('baseapp:change_password')
+
+        if len(pass1) < 6:
+            messages.error(request, "Password must be atleast 6 characters long.")
+            return redirect('baseapp:change_password')
+        
+        if not any(char.isdigit() for char in pass1) \
+            or not any(char.isupper() for char in pass1) \
+            or not any(char.islower() for char in pass1):
+            messages.error(request, "Password must contain atleast one uppercase, one lowercase character, and one digit.")
             return redirect('baseapp:change_password')
 
         if pass1 != pass2:
@@ -875,7 +887,7 @@ def place_order(request):
     if request.method == 'POST':
         # Create a new order with form data
         new_order = Order()
-        new_order.order_id = generate_random_identifier()
+        new_order.id = generate_random_identifier()
         new_order.user = request.user
         cart_items = CartItem.objects.filter(cart__user=request.user)
         new_order.items_summary = "\n".join(
@@ -893,7 +905,7 @@ def place_order(request):
         CartItem.objects.filter(cart__user=request.user).delete()
         # Redirect to a new URL for order confirmation
         return redirect('baseapp:order_status', order_id=new_order.id)
-        #return redirect('order_confirmation', order_id=new_order.order_id)
+        #return redirect('order_confirmation', order_id=new_order.id)
     else:
         # If the request is GET, display the cart items and total price
         cart_items = CartItem.objects.filter(cart__user=request.user)
@@ -918,12 +930,12 @@ def cancel_order(request, order_id):
     order.delete()
     messages.success(request, "Order Cancelled Successfully!!")
     title = "Order Cancelled!!"
-    message = f"Order {order.order_id} has been cancelled."
-    url = reverse('baseapp:order_status', kwargs={'order_id':order.id})
+    message = f"Order {order_id} has been cancelled."
     if request.user.is_superuser:
-        notify_user(order.user.username, title, message, url)
+        notify_user(order.user.username, title, message)
+        return redirect('baseapp:manage_orders')
     else:
-        notify_superuser(title, message, url)
+        notify_superuser(title, message)
     return redirect('baseapp:order_history', username=request.user.username)
 
 #STRIPE
@@ -1112,12 +1124,12 @@ def update_order(request, order_id):
         messages.success(request, "Order Updated!!")
         if request.POST.get(f'delivery_status_{order_id}') == 'completed':
             title = "Order Delivered!!"
-            message = f"Your order {order.order_id} has been delivered."
+            message = f"Your order {order.id} has been delivered."
             url = reverse('baseapp:order_status', kwargs={'order_id':order.id})
             notify_user(order.user.username, title, message, url)
         elif request.POST.get(f'delivery_status_{order_id}') == 'in_progress':
             title = "Order Updated!!"
-            message = f"Your order {order.order_id} is out for delivery."
+            message = f"Your order {order.id} is out for delivery."
             url = reverse('baseapp:order_status', kwargs={'order_id':order.id})
             notify_user(order.user.username, title, message, url)
         return redirect('baseapp:manage_orders')
