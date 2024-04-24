@@ -176,8 +176,8 @@
                 <img src="{{ animal.picture.url }}" alt="{{ animal.title }} Image" class="slide-item">
                 {% endif %}
                 {% if animal.video %}
-                <video controls class="slide-item">
-                    <source src="{{ animal.video.url }}" type="video">
+                <video controls width="250" class="slide-item">
+                    <source src="{{ animal.video.url }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
                 <div class="control-icon prev" onclick="moveSlide(-1)"><i class="fas fa-chevron-left"></i></div>

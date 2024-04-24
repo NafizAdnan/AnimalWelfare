@@ -239,7 +239,7 @@
 <div class="order-container">
     <!-- Order Summary Section -->
     <div class="product-summary">
-        <div class="summary-header text-center mb-6">
+        <div class="summary-header text-center mb-4">
             <h1 class="title">Your Order Summary</h1>
         </div>
         <div class="product-details-header">
@@ -272,7 +272,7 @@
     </div>
     <!-- User Details Form Section -->
     <div class="shipping-info">
-        <h2 class="form-title text-center mb-6">Shipping Information</h2>
+        <h2 class="form-title text-center mb-3">Shipping Information</h2>
         <form action="{% url 'baseapp:place_order' %}" method="POST">
             {% csrf_token %}
             <!-- Form fields -->
@@ -294,11 +294,6 @@
             <div class="form-field">
                 <label for="city">City</label>
                 <input name="city" id="city" type="text" placeholder="Enter your city" required>
-            </div>
-            <!-- State Field -->
-            <div class="form-field">
-                <label for="state">State</label>
-                <input name="state" id="state" type="text" placeholder="Enter your division" required>
             </div>
              <!-- Address Field -->
             <div class="form-field">

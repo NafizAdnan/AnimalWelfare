@@ -18,9 +18,9 @@
 </style>
 
 <div>
-    <div class="mx-auto px-4 sm:px-8 py-2">
+    <div class="mx-auto px-4 sm:px-8 py-2 mb-10">
         <!-- Tabs/Navs -->
-        <div class="mb-4">
+        <div class="mb-2">
             <ul class="flex border-b">
                 <li class="-mb-px mr-1">
                     <a href="{% url 'baseapp:upload_history' request.user.username %}" class="inline-block py-2 px-4 text-blue-500 border-b-2 border-blue-500 font-semibold">
@@ -97,7 +97,7 @@
                 </table>
             </div>
         </div>
-        <div class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between">
+        <div class="px-5 py-5 bg-yellow-50 border-t flex flex-col xs:flex-row items-center xs:justify-between mt-6">
             <div class="inline-flex mt-2 xs:mt-0">
                 {% if page_obj.has_previous %}
                 <a href="?page={{ page_obj.previous_page_number }}" class="text-sm bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-l">

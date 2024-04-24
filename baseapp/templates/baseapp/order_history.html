@@ -84,7 +84,7 @@
 {% endblock extra_css %}
 
 {% block content %}
-<div class="py-2">
+<div class="py-2 mb-10">
   <!-- Tabs/Navs -->
   <div class="mb-2">
       <ul class="flex border-b">
@@ -115,7 +115,6 @@
     <th>Email</th>
     <th>Phone</th>
     <th>City</th>
-    <th>State</th>
     <th>Address</th>
     <th>Payment Status</th>
     <th>Items Ordered</th>
@@ -130,7 +129,6 @@
     <td class="text-gray-800">{{ order.email }}</td>
     <td class="text-gray-800">{{ order.phone }}</td>
     <td class="text-gray-800">{{ order.city }}</td>
-    <td class="text-gray-800">{{ order.state }}</td>
     <td class="text-gray-800">{{ order.address }}</td>
     <td class="{{ order.payment_status|yesno:'payment-status-paid,payment-status-not-paid' }} text-center">
         {{ order.payment_status|yesno:"Paid,Not Paid" }}
@@ -148,7 +146,7 @@
         {% endif %}
     </td>
     <td class="order-summary text-gray-800"><strong>Items:</strong> <br>{{ order.items_summary }}</td>
-    <td class="order-summary text-gray-800"><strong>Total:</strong> ${{ order.total_cost }}</td>
+    <td class="order-summary text-gray-800"><strong>Total:</strong> {{ order.total_cost }} BDT</td>
     {% if order.delivery == 'pending' %}
     <td class="order-summary">
       <!-- Trigger/Open The Modal -->

@@ -116,7 +116,7 @@
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
                 <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:user_profile' request.user.username %}">My Profile</a></li>
                 <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:change_password' %}">Change Password</a></li>
-                <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:upload_history' request.user.username %}">Upload History</a></li>
+                <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:add_animal' %}">Add an Animal</a></li>
                 <li><a class="dropdown-item font-semibold" href="{% url 'baseapp:signout' %}">Logout</a></li>
             </ul>
           </div>

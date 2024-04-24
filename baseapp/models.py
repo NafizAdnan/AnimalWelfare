@@ -33,7 +33,7 @@ class UserManager(BaseUserManager):
         )
 
         user.set_password(password)
-        user.is_active = True
+        # user.is_active = True
         user.save(using=self._db)
         return user
 
@@ -138,7 +138,7 @@ class Animal(models.Model):
             img = Image.open(self.picture.path)
 
             # Resize the image
-            max_size = (1280,720)
+            max_size = (1920, 1080)
             img.thumbnail(max_size)
             img.save(self.picture.path)
     
@@ -175,7 +175,7 @@ class Accessories(models.Model):
             img = Image.open(self.picture.path)
 
             # Resize the image
-            max_size = (150,150)
+            max_size = (1920, 1080)
             img.thumbnail(max_size)
             img.save(self.picture.path)
     
@@ -265,7 +265,6 @@ class Order(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=15)
     city = models.CharField(max_length=50)
-    state = models.CharField(max_length=50)
     address = models.TextField()
     payment = models.CharField(max_length=20, default='online')
     payment_status = models.BooleanField(default=False)

@@ -112,7 +112,6 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>City</th>
-                <th>State</th>
                 <th>Address</th>
                 <th>Payment Status</th>
                 <th>Items Ordered</th>
@@ -131,7 +130,6 @@
                 <td class="text-gray-800">{{ order.email }}</td>
                 <td class="text-gray-800">{{ order.phone }}</td>
                 <td class="text-gray-800">{{ order.city }}</td>
-                <td class="text-gray-800">{{ order.state }}</td>
                 <td class="text-gray-800">{{ order.address }}</td>
                 <td>
                     {% if not order.payment_status %}
@@ -146,7 +144,7 @@
                 </td>
                 <td class="text-gray-800">{{ order.items_summary }}</td>
                 <td class="text-gray-800 text-center">{{ order.total_cost }} BDT</td>
-                <td>
+                <td class="text-black">
                     {% if order.delivery != 'completed' %}
                         <select name="delivery_status_{{ order.id }}" class="bg-gray-100">
                             <option value="pending" {% if order.delivery == 'pending' %}selected{% endif %}>Pending</option>

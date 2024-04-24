@@ -23,6 +23,7 @@ import os
 from django.shortcuts import render
 from django.core import serializers
 from django.http import JsonResponse, HttpResponseNotFound
+from django.utils.html import strip_tags
 
 # Create your views here.
 
@@ -146,24 +147,32 @@ def signup(request):
             messages.error(request, "Username already exist! Please try some other username.")
             return redirect('baseapp:signup')
 
-        #if User.objects.filter(email=email).exists():
-            #messages.error(request, "Email Already Registered!!")
-            #return redirect('signup')
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email Already Registered!")
+            return redirect('signup')
 
         if len(username) > 20:
-            messages.error(request, "Username must be under 20 charcters!!")
+            messages.error(request, "Username must be under 20 charcters.")
             return redirect('baseapp:signup')
-
+        
+        if len(pass1) < 6:
+            messages.error(request, "Password must be atleast 6 characters long.")
+            return redirect('baseapp:signup')
+        
+        if not any(char.isdigit() or char.isupper() or char.islower() for char in pass1):
+            messages.error(request, "Password must contain atleast one uppercase, one lowercase and one digit.")
+            return redirect('baseapp:signup')
+        
         if pass1 != pass2:
-            messages.error(request, "Passwords didn't match!!")
+            messages.error(request, "Passwords didn't match!")
             return redirect('baseapp:signup')
 
         if not username.isalnum():
-            messages.error(request, "Username must be Alpha-Numeric!!")
+            messages.error(request, "Username must be Alpha-Numeric.")
             return redirect('baseapp:signup')
 
         newUser = User.objects.create_user(username=username, first_name=fname, last_name=lname, email=email, password=pass1)
-        newUser.is_active = True
+        # newUser.is_active = True
         newUser.save()
         messages.success(request, "Your Account has been created succesfully!!")
 
@@ -254,7 +263,12 @@ def signin(request):
     if request.method == "POST":
         username = request.POST['username']
         pass1 = request.POST['pass1']
-
+        try:
+            user = User.objects.get(username=username)
+            if not user.is_active:
+                messages.error(request, "Please activate your account first by verifying your email address.")
+                return redirect('baseapp:signin')
+        except:pass
         user = authenticate(username=username, password=pass1)
         if user is not None:
             login(request, user)
@@ -284,8 +298,8 @@ def activate(request, uidb64, token):
         newUser.is_active = True
         # user.profile.signup_confirmation = True
         newUser.save()
-        login(request, newUser)
-        messages.success(request, "Your Account has been activated!!")
+        # login(request, newUser)
+        messages.success(request, "Your Account has been activated! Sign in to continue.")
         return redirect('baseapp:signin')
     else:
         messages.success(request, "Account NOT Activated!!")
@@ -303,7 +317,7 @@ def addAnimal(request):
         description = request.POST.get('description')
         location = request.POST.get('location')
         contact = request.POST.get('contact')
-        vaccinated = request.POST.get('vaccinated', False) == 'on'
+        vaccinated = request.POST.get('vaccinated')
         available_for = request.POST.get('available_for')
 
         animal = Animal(title=title, age=age, breed=breed, description=description, location=location, 
@@ -324,6 +338,10 @@ def addAnimal(request):
         animal.video = request.FILES.get('video') if 'video' in request.FILES else None
         animal.save()
         messages.success(request, "Animal Added Successfully!!")
+        title = "New Animal Upload!!"
+        message = f"A new animal has been uploaded by {animal.user.username}. Take an action."
+        url = reverse('baseapp:manage_animals')
+        notify_superuser(title, message, url)
         return redirect('baseapp:upload_history', username=request.user.username)
 
     return render(request, 'baseapp/add_animal.html')
@@ -338,14 +356,14 @@ def is_animal_in_image(picture, path):
     if 'upload_id' in upload_response['result']:
         upload_id = upload_response['result']['upload_id']
         categories_response = get_image_categories(upload_id)
-        print(categories_response)
+        print("Result:", categories_response)
         if categories_response['status']['type'] == 'success':
             categories = categories_response['result']['categories']
-            print(categories)
+            print('Successful Categories:', categories)
             for category in categories:
                 name = category['name']
                 for key in name:
-                    if 'animal' in name[key].lower():
+                    if 'animal' in name[key].lower() and category['confidence'] > 5:
                         return True
         else:
             print("Error in getting categories!!")
@@ -356,13 +374,14 @@ def is_animal_in_image(picture, path):
 def updateAnimal(request, id):
     animal = get_object_or_404(Animal, id=id)
     if request.method == "POST":
+        print(request.POST)
         animal.title = request.POST.get('title', animal.title)
         animal.age = int(request.POST.get('age', animal.age))
         animal.breed = request.POST.get('breed', animal.breed)
         animal.description = request.POST.get('description', animal.description)
         animal.location = request.POST.get('location', animal.location)
         animal.contact = request.POST.get('contact', animal.contact)
-        animal.vaccinated = 'vaccinated' in request.POST and request.POST['vaccinated'] == 'on'
+        animal.vaccinated = request.POST.get('vaccinated') or animal.vaccinated
         animal.available_for = request.POST.get('available_for', animal.available_for)
 
         picture = request.FILES.get('picture')
@@ -396,6 +415,9 @@ def deleteAnimal(request, id):
     animal.delete()
     messages.success(request, "Animal Deleted Successfully!!")
     if is_admin(request.user):
+        title = "Animal Declined!!"
+        message = f"Your uploaded animal '{animal.title}' has been declined by the admin."
+        notify_user(animal.user.username, title, message)
         return redirect('baseapp:manage_animals')
     return redirect('baseapp:upload_history', username=request.user.username)
 
@@ -449,6 +471,10 @@ def approveAnimal(request, id):
         animal.approved = True
         animal.save()
         messages.success(request, "Animal Approved Successfully!!")
+        title = "Animal Approved!!"
+        message = f"Your uploaded animal '{animal.title}' has been approved by the admin."
+        url = reverse('baseapp:animal_detail', kwargs={'id':animal.id})
+        notify_user(animal.user.username, title, message, url)
         return redirect('baseapp:approved_uploads')
     return redirect('baseapp:manage_animals')
 
@@ -577,7 +603,7 @@ def add_message(request, ticket_id):
 @login_required(login_url='baseapp:signin')
 def list_tickets(request):
     if request.user.is_superuser:
-        tickets = Ticket.objects.all().order_by('-status')
+        tickets = Ticket.objects.filter(status='open').order_by('-status')
     else:
         tickets = Ticket.objects.filter(user=request.user).order_by('-status')
     return render(request, 'baseapp/list_tickets.html', {'tickets': tickets})
@@ -595,7 +621,7 @@ def accept_ticket(request, ticket_id):
     message = "Your ticket has been accepted by " + request.user.username
     url = reverse('baseapp:ticket_detail', kwargs={'ticket_id':ticket.id})
     notify_user(ticket.user.username, title, message, url)
-    return redirect('baseapp:list_tickets')
+    return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
 
 @login_required(login_url='baseapp:signin')
 @user_passes_test(lambda u: u.is_superuser)
@@ -615,7 +641,16 @@ def close_ticket(request, ticket_id):
     ticket.status = 'closed'
     ticket.save()
     messages.warning(request, "Ticket Closed!!")
-    return redirect('baseapp:list_tickets')
+    if request.user == ticket.user:
+        title = "Ticket Closed!!"
+        message = f'Ticket {ticket_id} has been closed by {request.user.username}'
+        notify_superuser(title, message)
+    else:
+        title = "Ticket Closed!!"
+        message = f'Ticket {ticket_id} has been closed by {request.user.username}'
+        url = reverse('baseapp:ticket_detail', kwargs={'ticket_id':ticket.id})
+        notify_user(ticket.user.username, title, message, url)
+    return redirect('baseapp:ticket_detail', ticket_id=ticket.id)
 
 @login_required(login_url='baseapp:signin')
 @user_passes_test(lambda u: u.is_superuser)
@@ -779,9 +814,12 @@ def add_to_cart(request, accessory_id):
             return redirect('baseapp:products_for_sale')
         cart, created = Cart.objects.get_or_create(user=request.user)
         cart_item, created = CartItem.objects.get_or_create(cart=cart, accessory=accessory)
-
+        print(created)
         if not created:
             cart_item.quantity += 1
+            if cart_item.quantity > accessory.stock:
+                messages.error(request, "Not enough stock.")
+                return redirect('baseapp:cart')
             cart_item.save()
 
         return redirect('baseapp:cart')
@@ -797,6 +835,9 @@ def adjust_cart_item(request, item_id, action):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     if action == "add":
         cart_item.quantity += 1
+        if cart_item.quantity > cart_item.accessory.stock:
+            messages.error(request, "Not enough stock.")
+            return redirect('baseapp:cart')
     elif action == "subtract":
         cart_item.quantity -= 1
         if cart_item.quantity < 1:
@@ -834,7 +875,7 @@ def place_order(request):
     if request.method == 'POST':
         # Create a new order with form data
         new_order = Order()
-        new_order.order_id = generate_random_identifier()  # Generate a random Order ID
+        new_order.order_id = generate_random_identifier()
         new_order.user = request.user
         cart_items = CartItem.objects.filter(cart__user=request.user)
         new_order.items_summary = "\n".join(
@@ -844,7 +885,6 @@ def place_order(request):
         new_order.email = request.POST.get('email')
         new_order.phone = request.POST.get('phone')
         new_order.city = request.POST.get('city')
-        new_order.state = request.POST.get('state')
         new_order.address = request.POST.get('address')
         new_order.payment_status = False  # Payment status is initially False
         new_order.payment = request.POST.get('payment')
@@ -889,16 +929,45 @@ def cancel_order(request, order_id):
 #STRIPE
 # views.py
 def payment_success(request, order_id):
-    # Logic to handle successful payment
     order = get_object_or_404(Order, id=order_id)
     if not order.payment_status:
-        order.payment_status=True
+        order.payment_status = True
         order.save()
-    # You can retrieve the session ID with request.GET.get('session_id')
+
+        # Parse the items_summary to update stock for each accessory purchased
+        items = order.items_summary.split('\n')
+        for item in items:
+            parts = item.split(' - ')
+            quantity, title = parts[0].split('x ')
+            accessory = Accessories.objects.get(title=title.strip())
+            accessory.stock -= int(quantity.strip())
+            accessory.save()
+
+
+        # Email subject
+        subject = f'Order Confirmation - {order.id} - Animal Welfare'
+
+        # Render HTML email template with context data
+        html_message = render_to_string('baseapp/email_purchase.html', {
+            'user': order.name,
+            'order_id': order.id,
+            'items_summary': order.items_summary,
+            'total_cost': order.total_cost,
+        })
+        plain_message = strip_tags(html_message)
+        # Send an email to the user
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [order.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
     return render(request, 'baseapp/success.html')
 
 def payment_cancel(request, order_id):
-    # Logic to handle payment cancellation
     return render(request, 'baseapp/cancel.html')
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -906,14 +975,17 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 def create_stripe_session(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     if not order.payment_status:
-        # Split the items_summary by line breaks to process each item
         items = order.items_summary.split('\n')
         line_items = []
         for item in items:
-            # Assuming each item follows the format "quantityx title - $total_price"
-            parts = item.split(' - $')
+            print(item)
+            parts = item.split(' - ')
+            print(parts)
             quantity, title = parts[0].split('x ')
-            total_price = parts[1]
+            total_price = parts[1].split(' BDT')[0]
+            print(quantity)
+            print(title)
+            print(total_price)
             line_items.append({
                 'price_data': {
                     'currency': 'usd',
@@ -943,7 +1015,7 @@ def create_stripe_session(request, order_id):
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = 'your-endpoint-secret'  # Replace with your endpoint's secret
+    endpoint_secret = 'your-endpoint-secret'
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
@@ -954,13 +1026,10 @@ def stripe_webhook(request):
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
         return HttpResponse(status=400)
-    # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        # Retrieve the order using the session ID
         order_id = session.get('client_reference_id')
         order = Order.objects.get(id=order_id)
-        # Update the order's payment status
         order.payment_status = True
         order.save()
     return HttpResponse(status=200)
@@ -969,25 +1038,16 @@ from django.shortcuts import render
 import requests
 @login_required(login_url='baseapp:signin')
 def animal_info(request):
-    # Initialize variables
     animal_name = ''
     api_response = ''
-    # Check if the form is submitted
     if request.method == 'POST':
-        # Extract the animal name from the form
         animal_name = request.POST.get('animal_name', '')
-        # Construct the API URL with the provided animal name
         api_url = 'https://api.api-ninjas.com/v1/animals?name={}'.format(animal_name)
-        # Make the API call
         response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
-        # Check the response status
         if response.status_code == requests.codes.ok:
-            # If successful, get the API response
             api_response = response.json()
         else:
-            # If there's an error, display the error message
             api_response = {'error': 'Error occurred while fetching data'}
-    # Render the template with the form and API response
     return render(request, 'baseapp/animal_info.html', {'animal_name': animal_name, 'api_response': api_response})
 
 @login_required(login_url='baseapp:signin')
@@ -997,7 +1057,7 @@ def know_before(request):
 @login_required(login_url='baseapp:signin')
 def know_before_cat(request):
     if request.method == 'POST':
-        name = request.POST.get('cat_name')  # Get the value of 'cat_name' from the form
+        name = request.POST.get('cat_name')
         api_url = 'https://api.api-ninjas.com/v1/cats?name={}'.format(name)
         response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
         if response.status_code == requests.codes.ok:
@@ -1007,13 +1067,12 @@ def know_before_cat(request):
             error_message = "Error: {} {}".format(response.status_code, response.text)
             return render(request, 'baseapp/know_before_cat.html', {'error_message': error_message})
     else:
-            # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_cat.html')
     
 @login_required(login_url='baseapp:signin')
 def know_before_dog(request):
     if request.method == 'POST':
-        name = request.POST.get('dog_name')  # Get the value of 'cat_name' from the form
+        name = request.POST.get('dog_name')
         api_url = 'https://api.api-ninjas.com/v1/dogs?name={}'.format(name)
         response = requests.get(api_url, headers={'X-Api-Key': 'kwD3sIgglP8eFSY7kT8CLA==pxqZsePmFRhympw6'})
         if response.status_code == requests.codes.ok:
@@ -1023,7 +1082,6 @@ def know_before_dog(request):
             error_message = "Error: {} {}".format(response.status_code, response.text)
             return render(request, 'baseapp/know_before_dog.html', {'error_message': error_message})
     else:
-            # Render an empty form when the page is initially loaded
         return render(request, 'baseapp/know_before_dog.html')
 
 def catalog(request):

@@ -121,7 +121,7 @@
             </div>
             <div class="order-total">
                 <h3>Total Cost:</h3>
-                <p>${{ order.total_cost }}</p>
+                <p>{{ order.total_cost }} BDT</p>
             </div>
             <p><strong>Order ID:</strong> <span>{{ order.id }}</span></p>
             <p><strong>Date:</strong> <span>{{order.created_at}}</span></p>
@@ -130,7 +130,6 @@
             <p><strong>Email:</strong> <span>{{ order.email }}</span></p>
             <p><strong>Phone:</strong> <span>{{ order.phone }}</span></p>
             <p><strong>City:</strong> <span>{{ order.city }}</span></p>
-            <p><strong>State:</strong> <span>{{ order.state }}</span></p>
             <p><strong>Address:</strong> <span>{{ order.address }}</span></p>
             <!-- Unified form to update payment and delivery status -->
             <form method="POST" action="{% url 'baseapp:update_order' order.id %}">

@@ -63,6 +63,10 @@
             background-color: #000307;
         }
 
+        h2 {
+            color: #000103;
+            margin-bottom: 10px;
+        }
 
         .info-container {
             background-color: #fff;
@@ -70,18 +74,20 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
-        }
-
-        h2 {
-            color: #000103;
-            margin-bottom: 10px;
+            margin-left: auto;
+            margin-right: auto;
+            width: fit-content; /* This will make sure container width is as per content */
+            text-align: center; /* Center align the text */
         }
 
         img {
-            max-width: 100%;
+            max-width: 50%;
             height: auto;
             margin-bottom: 10px;
             border-radius: 5px;
+            display: block; /* Images are inline by default, block will allow margins to be auto */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         p {
